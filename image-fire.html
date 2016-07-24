@@ -7,19 +7,39 @@
         display: block;
       }
     </style>
-    <h2>Hello [[prop1]]</h2>
+  <input type="file" name="file" id="file"> 
   </template>
 
   <script>
+    /**
+     * An element that allows simple upload of an image to Firebase storage
+     * Example:
+     * ```
+     * <firebase-app
+     *   name="demo"
+     *   api-key="API_KEY"
+     *   auth-domain="AUTH_DOMAIN"
+     *   database-url="DATABASE_URL"></firebase-app>
+     * <!-- A image-fire element allowing image upload to firebase storage -->
+     * <image-fire app-name="demo"></image-fire>
+     * ```
+     *
+     *
+     * @demo demo/index.html
+     */
     Polymer({
 
       is: 'image-fire',
 
       properties: {
-        prop1: {
-          type: String,
-          value: 'image-fire',
+        /**
+        * `appName` represents the name of the firebase-app that was instantiated
+        */
+        appName: {
+            type: String
         },
+
+
       },
 
     });
