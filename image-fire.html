@@ -3,9 +3,9 @@
 <dom-module id="image-fire">
   <template>
     <style>
-      :host {
-        display: block;
-      }
+        :host {
+            display: block;
+        }
     </style>
   <input type="file" name="file" id="file"> 
   </template>
@@ -19,34 +19,134 @@
      *   name="demo"
      *   api-key="API_KEY"
      *   auth-domain="AUTH_DOMAIN"
-     *   database-url="DATABASE_URL"></firebase-app>
+     *   database-url="DATABASE_URL"
+     *   storage-bucket="convoofire.appspot.com">
+     * </firebase-app>
      * <!-- A image-fire element allowing image upload to firebase storage -->
-     * <image-fire app-name="demo"></image-fire>
+     * <image-fire storage-path="/u/"></image-fire>
      * ```
      *
      *
      * @demo demo/index.html
      */
     Polymer({
-
-      is: 'image-fire',
-
-      properties: {
-        /**
-        * `appName` represents the name of the firebase-app that was instantiated
-        */
+        is: 'image-fire',
+        properties: {
+        //     /**
+        //     * `appName` represents the name of the firebase-app that was instantiated
+        //     */
         appName: {
-            type: String
+            type: String,
         },
-
-
-      },
-        attached: function(){
-            // Get a reference to the storage service, which is used to create references in your storage bucket
-            var storage = firebase.storage();
-            // Create a storage reference from our storage service
-            var storageRef = storage.ref();
+        //     /**
+        //     * `appstoragePath` represents where the file should be saved
+        //     */
+        storagePath: {
+            type: String,
+        },
+        //     /**
+        //     * `remotePath` represents the URL of the remote file to upload
+        //     */
+        remotePath: {
+            type: String,
         }
+    },
+
+    attached: function(){
+        var that = this;
+        // Create a path to remote file.
+        var path = "https://lh4.ggpht.com/qUs2_ntWQrWgNElAdHNVNpK_P4xuhPbX8WOcncUS0f5yQVdYtrGH9xit_aBkgwCz0mA=w300"
+        // File or Blob 
+        this._resizeThis(300, path, "blob").then(function(blob){
+            var file  = blob;
+            var metadata = {contentType: 'image/jpeg'};
+            var path = that.storagePath;
+            that._uploadThis(blob, metadata, path);
+        });
+    },
+
+
+    _uploadThis: function(file, metadata, path){
+        return new Promise(function(resolve, reject){
+            // Get a reference to the storage service, which is used to create references in your storage bucket.
+            var storage = firebase.storage();
+            // Create a storage reference from our storage service.
+            var storageRef = storage.ref();
+            // Upload file and metadata to the object 'images/mountains.jpg'
+            var uploadTask = storageRef.child(path+file.name).put(file, metadata);
+            // Listen for state changes, errors, and completion of the upload.
+            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+            function(snapshot) {
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                switch (snapshot.state) {
+                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                    console.log('Upload is paused');
+                    break;
+                case firebase.storage.TaskState.RUNNING: // or 'running'
+                    console.log('Upload is running');
+                    break;
+                }
+            }, function(error) {
+            switch (error.code) {
+                case 'storage/unauthorized':
+                    console.log('Please adjust the storage rules in the Firebase console');
+                    reject('storage/unauthorized');
+                break;
+
+                case 'storage/canceled':
+                    console.log('You canceled the upload');
+                    reject('storage/canceled');
+                break;
+
+                case 'storage/unknown':
+                    console.log('Unknown Error: '+ error.serverResponse);
+                    reject('storage/unknown');
+                break;
+            }
+            }, function() {
+            // Upload completed successfully, now we can get the download URL
+            var downloadURL = uploadTask.snapshot.downloadURL;
+            console.log(downloadURL);
+            resolve(downloadURL);
+            });
+        }); 
+    },
+
+
+    _resizeThis: function(size, img, type){
+            return new Promise(function(resolve, reject){
+            var canvas = document.createElement("canvas");
+            canvas.width = canvas.height = size;
+            var ctx = canvas.getContext("2d");  
+            var image = new Image();
+            if(typeof img == "string"){
+            image.src = img;
+            } else {
+                image.src = URL.createObjectURL(img);
+            }
+            image.crossOrigin = "Anonymous";
+            image.onload = function() {
+                ctx.drawImage(image, 0, 0, size, size);
+                canvas.toBlob(function(blob) {
+                    var myblob = blob;
+                    myblob.name = size;
+                    if(size > 6){
+                        resolve(myblob);
+                    } else {
+                        var reader = new window.FileReader();
+                        reader.readAsDataURL(myblob); 
+                        reader.onloadend = function() {
+                        base64data = reader.result;                
+                        resolve(base64data);
+                        }
+                    }
+                });
+            }
+            }); 
+        } // End function "resizeThis" 
+
 
     });
   </script>

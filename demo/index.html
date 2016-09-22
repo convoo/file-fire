@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>image-fire demo</title>
+    <title>login-fire demo</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
@@ -11,25 +11,27 @@
 
     <link rel="import" href="../image-fire.html">
     <link rel="import" href="../../polymerfire/firebase-app.html">
+    <link rel="import" href="../../paper-dialog/paper-dialog.html">
 
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
   </head>
   <body>
 
-    <div class="vertical-section-container centered">
-      <h3>Basic image-fire Demo</h3>
+  <div>
+      <h3>Single File Upload</h3>
       <demo-snippet>
-        <template>
-            <firebase-app
-            name="imageDemo"
+        <template >
+          <firebase-app
+
             api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
             auth-domain="convoofire.firebaseapp.com"
             database-url="https://convoofire.firebaseio.com"
-            storage-bucket= "gs://convoofire.appspot.com">
-          </firebase-app>
+            storage-bucket="convoofire.appspot.com"
 
-          <image-fire></image-fire>
+            >
+          </firebase-app>
+          <image-fire storage-path="/u/"></image-fire>
         </template>
       </demo-snippet>
     </div>
