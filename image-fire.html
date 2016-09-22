@@ -23,7 +23,13 @@
      *   storage-bucket="convoofire.appspot.com">
      * </firebase-app>
      * <!-- A image-fire element allowing image upload to firebase storage -->
-     * <image-fire storage-path="/u/"></image-fire>
+     * <image-fire 
+     *  storage-path="/u/"
+     *  image-from="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_bigger.jpg"
+     *  progress="{{progress}}"
+     *  overwrite="false"
+     *  resize="300"
+     * ></image-fire>
      * ```
      *
      *
@@ -39,41 +45,74 @@
             type: String,
         },
         //     /**
-        //     * `appstoragePath` represents where the file should be saved
+        //     * `appstoragePath` represents where the file should be saved, if the path doesnt exist it will be created
         //     */
         storagePath: {
             type: String,
         },
         //     /**
-        //     * `remotePath` represents the URL of the remote file to upload
+        //     * `imageFrom` represents where to get the image from either an ID for a URL
         //     */
-        remotePath: {
+        imageFrom: {
             type: String,
+        },
+        //     /**
+        //     * `progress` represents a percentage value for the file upload
+        //     */
+        progress: {
+            type: Number,
+            reflectToAttribute: true
+        },
+        //     /**
+        //     * `overwrite` represents if a file can be overwritten or not, when set to false the file name will be prefixed with the curent epoch
+        //     */
+        overWrite: {
+            type: String,
+        },
+        //     /**
+        //     * `fileName` represents the name of the file to sore to disk
+        //     */
+        fileName: {
+            type: String,
+        },
+        //     /**
+        //     * `resize` represents the size the image will be resized to
+        //     */
+        resize: {
+            type: Number,
+        }
+    },
+    
+    listeners: {
+        'file.change' : '_start'
+    },
+
+    attached: function(){  
+        if(this.imageFrom){
+            this._resizeThis(this.overWrite, this.fileName, this.resize, this.imageFrom, "blob").then(function(file){
+                this._uploadThis(file, this.storagePath);
+            }.bind(this));
         }
     },
 
-    attached: function(){
-        var that = this;
-        // Create a path to remote file.
-        var path = "https://lh4.ggpht.com/qUs2_ntWQrWgNElAdHNVNpK_P4xuhPbX8WOcncUS0f5yQVdYtrGH9xit_aBkgwCz0mA=w300"
-        // File or Blob 
-        this._resizeThis(300, path, "blob").then(function(blob){
-            var file  = blob;
-            var metadata = {contentType: 'image/jpeg'};
-            var path = that.storagePath;
-            that._uploadThis(blob, metadata, path);
-        });
+    _start: function(e){
+        this._resizeThis(this.overWrite, this.fileName, this.resize, e.target.files[0], "blob").then(function(file){
+            this._uploadThis(file, this.storagePath);
+        }.bind(this));
     },
 
-
-    _uploadThis: function(file, metadata, path){
+    _uploadThis: function(file, storagePath){
         return new Promise(function(resolve, reject){
+            // Check the Stprage path ends in a /     
+            if(storagePath.slice(-1) !== '/'){
+                storagePath = storagePath+'/'
+            }
             // Get a reference to the storage service, which is used to create references in your storage bucket.
             var storage = firebase.storage();
             // Create a storage reference from our storage service.
             var storageRef = storage.ref();
             // Upload file and metadata to the object 'images/mountains.jpg'
-            var uploadTask = storageRef.child(path+file.name).put(file, metadata);
+            var uploadTask = storageRef.child(storagePath+file.name).put(file);
             // Listen for state changes, errors, and completion of the upload.
             uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
             function(snapshot) {
@@ -96,7 +135,7 @@
                 break;
 
                 case 'storage/canceled':
-                    console.log('You canceled the upload');
+                    console.log('Oopps! You canceled the upload');
                     reject('storage/canceled');
                 break;
 
@@ -115,7 +154,7 @@
     },
 
 
-    _resizeThis: function(size, img, type){
+    _resizeThis: function(overwrite, name, size, img, type){
             return new Promise(function(resolve, reject){
             var canvas = document.createElement("canvas");
             canvas.width = canvas.height = size;
@@ -131,7 +170,13 @@
                 ctx.drawImage(image, 0, 0, size, size);
                 canvas.toBlob(function(blob) {
                     var myblob = blob;
-                    myblob.name = size;
+                    var extension = blob.type.split("/");
+                    var epoch = new Date().getTime();
+                    if(overwrite == "yes"){
+                        myblob.name = name+'_'+size+'.'+extension[1];  
+                    } else{
+                        myblob.name = epoch+'_'+name+'_'+size+'.'+extension[1];  
+                    }
                     if(size > 6){
                         resolve(myblob);
                     } else {
