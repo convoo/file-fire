@@ -156,27 +156,38 @@
 
     _resizeThis: function(overwrite, name, size, img, type){
             return new Promise(function(resolve, reject){
-            var canvas = document.createElement("canvas");
-            canvas.width = canvas.height = size;
-            var ctx = canvas.getContext("2d");  
+            // make anew image
             var image = new Image();
+            // determin if we have a path or a file/blob
             if(typeof img == "string"){
             image.src = img;
             } else {
                 image.src = URL.createObjectURL(img);
             }
+            // Make sure we can load the file from another website if we need to
             image.crossOrigin = "Anonymous";
             image.onload = function() {
-                ctx.drawImage(image, 0, 0, size, size);
+                // Make and size the canvas
+                var canvas = document.createElement("canvas");
+                canvas.width = size
+                canvas.height = size;
+                //var scaledImage = downScaleImage(img, 0.3);
+                var context = canvas.getContext("2d");  
+                // Position the image in the center 
+                context.drawImage(image, 0, 0, size, size);
+                // conver the canvas to a blob 
                 canvas.toBlob(function(blob) {
                     var myblob = blob;
+                    // figure out the etnesion from the type
                     var extension = blob.type.split("/");
                     var epoch = new Date().getTime();
+                    // generate the file name
                     if(overwrite == "yes"){
                         myblob.name = name+'_'+size+'.'+extension[1];  
                     } else{
                         myblob.name = epoch+'_'+name+'_'+size+'.'+extension[1];  
                     }
+                    // If its a big file resolve a blob if its small resolve Base64
                     if(size > 6){
                         resolve(myblob);
                     } else {
@@ -187,9 +198,9 @@
                         resolve(base64data);
                         }
                     }
-                });
-            }
-            }); 
+                }); // End canvas t blob
+            } // End on image load
+            }); // End Promise
         } // End function "resizeThis" 
 
 
