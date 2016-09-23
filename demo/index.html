@@ -18,10 +18,14 @@
   </head>
   <body>
 
+
   <div>
       <h3>Single File Upload & Resize</h3>
-      <demo-snippet>
-        <template >
+       
+   
+
+          <dom-module id="demo">
+        <template is="dom-bind" id="demo-template">
           <firebase-app
             api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
             auth-domain="convoofire.firebaseapp.com"
@@ -31,15 +35,38 @@
           </firebase-app>
           <image-fire 
             storage-path="/u"
-            image-from="https://lh4.ggpht.com/qUs2_ntWQrWgNElAdHNVNpK_P4xuhPbX8WOcncUS0f5yQVdYtrGH9xit_aBkgwCz0mA=w300"
-            over-write="yes" 
-            resize="200"
+            resize-width="50"
+            resize-height="50"
             file-name="test"
             progress="{{progress}}"
+            over-write
+            image-from="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+            base64="{{base64}}"
           ></image-fire>
+          <div>{{progress}}</div>
+           <img src="{{base64}}">
         </template>
-      </demo-snippet>
+         </dom-module>
+
+    
+      
     </div>
 
   </body>
 </html>
+
+<!--
+file name to be combined with storage path, 
+if the storage ends with a / then use the original file name.
+
+rename image-from to src-url
+add src for pointing to the file upload form thing
+
+overwrite to boolean default to false
+
+split componants to image fire and and image fire upload 
+
+if there is not src or no srcurl it will get the image from the server
+
+possible seperate file fire upload componant 
+-->

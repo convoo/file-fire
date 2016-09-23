@@ -8,6 +8,7 @@
         }
     </style>
   <input type="file" name="file" id="file"> 
+
   </template>
 
   <script>
@@ -55,19 +56,22 @@
         //     */
         imageFrom: {
             type: String,
+            observer: "_uploadImageFrom",
         },
         //     /**
         //     * `progress` represents a percentage value for the file upload
         //     */
         progress: {
             type: Number,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            notify: true,
         },
         //     /**
         //     * `overwrite` represents if a file can be overwritten or not, when set to false the file name will be prefixed with the curent epoch
         //     */
         overWrite: {
-            type: String,
+            type: Boolean,
+            value: false,
         },
         //     /**
         //     * `fileName` represents the name of the file to sore to disk
@@ -78,25 +82,41 @@
         //     /**
         //     * `resize` represents the size the image will be resized to
         //     */
-        resize: {
+        resizeWidth: {
             type: Number,
+            value: 0
+        },
+        //     /**
+        //     * `resize` represents the size the image will be resized to
+        //     */
+        resizeHeight: {
+            type: Number,
+            value: 0
+        },
+        //     /**
+        //     * `base64` represents the size the image will be resized to
+        //     */
+        base64: {
+            type: String,
+            reflectToAttribute: true,
+            notify: true,
         }
+
     },
     
     listeners: {
         'file.change' : '_start'
     },
 
-    attached: function(){  
-        if(this.imageFrom){
-            this._resizeThis(this.overWrite, this.fileName, this.resize, this.imageFrom, "blob").then(function(file){
+// observer
+    _uploadImageFrom: function(){  
+            this._resizeThis(this.imageFrom, "blob").then(function(file){ 
                 this._uploadThis(file, this.storagePath);
             }.bind(this));
-        }
     },
 
     _start: function(e){
-        this._resizeThis(this.overWrite, this.fileName, this.resize, e.target.files[0], "blob").then(function(file){
+        this._resizeThis(e.target.files[0], "blob").then(function(file){
             this._uploadThis(file, this.storagePath);
         }.bind(this));
     },
@@ -117,8 +137,8 @@
             uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
             function(snapshot) {
                 // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Upload is ' + progress + '% done');
+                this.progress = (snapshot.bytesTransferred / snapshot.totalBytes) *100 ;
+                console.log('Upload is ' + this.progress + '% done');
                 switch (snapshot.state) {
                 case firebase.storage.TaskState.PAUSED: // or 'paused'
                     console.log('Upload is paused');
@@ -127,7 +147,7 @@
                     console.log('Upload is running');
                     break;
                 }
-            }, function(error) {
+            }.bind(this), function(error) {
             switch (error.code) {
                 case 'storage/unauthorized':
                     console.log('Please adjust the storage rules in the Firebase console');
@@ -150,57 +170,70 @@
             console.log(downloadURL);
             resolve(downloadURL);
             });
-        }); 
+        }.bind(this)); 
     },
 
 
-    _resizeThis: function(overwrite, name, size, img, type){
+    _resizeThis: function(image, type){
             return new Promise(function(resolve, reject){
-            // make anew image
-            var image = new Image();
-            // determin if we have a path or a file/blob
-            if(typeof img == "string"){
-            image.src = img;
+            
+            // Make a new image and set its source
+            img = new Image();
+            img.crossOrigin = "Anonymous";
+
+            if(typeof image == "string"){
+                img.src = image;
             } else {
-                image.src = URL.createObjectURL(img);
+                img.src = URL.createObjectURL(image);
             }
-            // Make sure we can load the file from another website if we need to
-            image.crossOrigin = "Anonymous";
-            image.onload = function() {
-                // Make and size the canvas
-                var canvas = document.createElement("canvas");
-                canvas.width = size
-                canvas.height = size;
-                //var scaledImage = downScaleImage(img, 0.3);
-                var context = canvas.getContext("2d");  
-                // Position the image in the center 
-                context.drawImage(image, 0, 0, size, size);
-                // conver the canvas to a blob 
-                canvas.toBlob(function(blob) {
+
+            // Wait for the image to the load the src
+            img.onload=function(){
+            
+            // Make canvas number 1
+                var canvas1 = document.createElement('canvas');
+                var context1 = canvas1.getContext('2d');
+            // if half of the image width is greater than the resize size
+                if(img.width * 0.5 > this.resizeWidth & img.height * 0.5 > this.resizeHeight){
+                    canvas1.width = img.width * 0.5;
+                    canvas1.height = img.height * 0.5;
+                    context1.drawImage(img, 0, 0, canvas1.width, canvas1.height);
+                    // if
+                    if(img.width * 0.5 > this.resizeWidth & img.height * 0.5 > this.resizeHeight){
+                            context1.drawImage(canvas1,0,0,canvas1.width * 0.5,canvas1.height * 0.5);
+                    }
+                }
+            
+            // Make the first canvas and size it to the resize size
+            var canvas2 = document.createElement('canvas');
+            var context2 = canvas2.getContext("2d");
+            canvas2.width = this.resizeWidth;
+            canvas2.height = this.resizeHeight;
+            context2.drawImage(canvas1,0,0,canvas1.width * 0.5, canvas1.height * 0.5, 0,0,canvas2.width,canvas2.height);
+        
+                // convert the canvas to a blob 
+                canvas2.toBlob(function(blob) {
                     var myblob = blob;
                     // figure out the etnesion from the type
                     var extension = blob.type.split("/");
                     var epoch = new Date().getTime();
                     // generate the file name
-                    if(overwrite == "yes"){
-                        myblob.name = name+'_'+size+'.'+extension[1];  
+                    if(this.overWrite){
+                        myblob.name = this.fileName+'_'+this.resizeWidth+'_'+this.resizeHeight+'.'+extension[1];  
                     } else{
-                        myblob.name = epoch+'_'+name+'_'+size+'.'+extension[1];  
+                        myblob.name = epoch+'_'+this.fileName+'_'+this.resizeWidth+'_'+this.resizeHeight+'.'+extension[1];  
                     }
-                    // If its a big file resolve a blob if its small resolve Base64
-                    if(size > 6){
+  
+                    var reader = new window.FileReader();
+                    reader.readAsDataURL(myblob); 
+                    reader.onloadend = function() {  
+                        this.base64 = reader.result
+                        console.log(this);
                         resolve(myblob);
-                    } else {
-                        var reader = new window.FileReader();
-                        reader.readAsDataURL(myblob); 
-                        reader.onloadend = function() {
-                        base64data = reader.result;                
-                        resolve(base64data);
-                        }
-                    }
-                }); // End canvas t blob
-            } // End on image load
-            }); // End Promise
+                    }.bind(this)        
+                }.bind(this)); // End canvas to blob
+            }.bind(this) // End on image load
+            }.bind(this)); // End Promise
         } // End function "resizeThis" 
 
 
