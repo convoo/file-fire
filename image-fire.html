@@ -1,15 +1,14 @@
 <link rel="import" href="../polymer/polymer.html">
 
 <dom-module id="image-fire">
-  <template>
-    <style>
-        :host {
-            display: block;
-        }
-    </style>
-  <input type="file" name="file" id="file"> 
-
-  </template>
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+        <input type="file" id="file" multiple accept="image/*"> 
+    </template>
 
   <script>
     /**
@@ -24,13 +23,14 @@
      *   storage-bucket="convoofire.appspot.com">
      * </firebase-app>
      * <!-- A image-fire element allowing image upload to firebase storage -->
-     * <image-fire 
-     *  storage-path="/u/"
-     *  image-from="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_bigger.jpg"
-     *  progress="{{progress}}"
-     *  overwrite="false"
-     *  resize="300"
-     * ></image-fire>
+     *  <image-fire 
+     *       storage-path="/u/test"
+     *       src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+     *       over-write
+     *       max-size="500"
+     *       progress="{{progress}}"
+     *       base64="{{base64}}"
+     *   ></image-fire>
      * ```
      *
      *
@@ -46,7 +46,7 @@
             type: String,
         },
         //     /**
-        //     * `appstoragePath` represents where the file should be saved, if the path doesnt exist it will be created
+        //     * `storagePath` represents where the file should be saved, if the path doesnt exist it will be created
         //     */
         storagePath: {
             type: String,
@@ -54,9 +54,37 @@
         //     /**
         //     * `imageFrom` represents where to get the image from either an ID for a URL
         //     */
-        imageFrom: {
+        srcUrl: {
             type: String,
-            observer: "_uploadImageFrom",
+            observer: "_loadImage",
+        },
+        //     /**
+        //     * `overwrite` represents if a file can be overwritten or not, when set to false the file name will be prefixed with the curent epoch
+        //     */
+        srcFile: {
+            type: Boolean,
+            value: false,
+        },
+        //     /**
+        //     * `overwrite` represents if a file can be overwritten or not, when set to false the file name will be prefixed with the curent epoch
+        //     */
+        overWrite: {
+            type: Boolean,
+            value: false,
+        },
+        //     /**
+        //     * `overwrite` represents if a file can be overwritten or not, when set to false the file name will be prefixed with the curent epoch
+        //     */
+        makeSquare: {
+            type: Boolean,
+            value: false,
+        },
+        //     /**
+        //     * `resize` represents the size the image will be resized to
+        //     */
+        maxSize: {
+            type: Number,
+            value: 0
         },
         //     /**
         //     * `progress` represents a percentage value for the file upload
@@ -67,174 +95,63 @@
             notify: true,
         },
         //     /**
-        //     * `overwrite` represents if a file can be overwritten or not, when set to false the file name will be prefixed with the curent epoch
-        //     */
-        overWrite: {
-            type: Boolean,
-            value: false,
-        },
-        //     /**
-        //     * `fileName` represents the name of the file to sore to disk
-        //     */
-        fileName: {
-            type: String,
-        },
-        //     /**
-        //     * `resize` represents the size the image will be resized to
-        //     */
-        resizeWidth: {
-            type: Number,
-            value: 0
-        },
-        //     /**
-        //     * `resize` represents the size the image will be resized to
-        //     */
-        resizeHeight: {
-            type: Number,
-            value: 0
-        },
-        //     /**
         //     * `base64` represents the size the image will be resized to
         //     */
-        base64: {
+        placeholder: {
             type: String,
             reflectToAttribute: true,
             notify: true,
         }
-
     },
     
     listeners: {
-        'file.change' : '_start'
+        'file.change' : '_loadImage'
     },
 
-// observer
-    _uploadImageFrom: function(){  
-            this._resizeThis(this.imageFrom, "blob").then(function(file){ 
-                this._uploadThis(file, this.storagePath);
-            }.bind(this));
+    ready: function() {
+        if(!this.srcUrl && !this.srcFile){
+            // GET IMAGE FROM STORAGE PATH
+        }
     },
 
-    _start: function(e){
-        this._resizeThis(e.target.files[0], "blob").then(function(file){
-            this._uploadThis(file, this.storagePath);
-        }.bind(this));
-    },
-
-    _uploadThis: function(file, storagePath){
-        return new Promise(function(resolve, reject){
-            // Check the Stprage path ends in a /     
-            if(storagePath.slice(-1) !== '/'){
-                storagePath = storagePath+'/'
-            }
-            // Get a reference to the storage service, which is used to create references in your storage bucket.
-            var storage = firebase.storage();
-            // Create a storage reference from our storage service.
-            var storageRef = storage.ref();
-            // Upload file and metadata to the object 'images/mountains.jpg'
-            var uploadTask = storageRef.child(storagePath+file.name).put(file);
-            // Listen for state changes, errors, and completion of the upload.
-            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
-            function(snapshot) {
-                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                this.progress = (snapshot.bytesTransferred / snapshot.totalBytes) *100 ;
-                console.log('Upload is ' + this.progress + '% done');
-                switch (snapshot.state) {
-                case firebase.storage.TaskState.PAUSED: // or 'paused'
-                    console.log('Upload is paused');
-                    break;
-                case firebase.storage.TaskState.RUNNING: // or 'running'
-                    console.log('Upload is running');
-                    break;
-                }
-            }.bind(this), function(error) {
-            switch (error.code) {
-                case 'storage/unauthorized':
-                    console.log('Please adjust the storage rules in the Firebase console');
-                    reject('storage/unauthorized');
-                break;
-
-                case 'storage/canceled':
-                    console.log('Oopps! You canceled the upload');
-                    reject('storage/canceled');
-                break;
-
-                case 'storage/unknown':
-                    console.log('Unknown Error: '+ error.serverResponse);
-                    reject('storage/unknown');
-                break;
-            }
-            }, function() {
-            // Upload completed successfully, now we can get the download URL
-            var downloadURL = uploadTask.snapshot.downloadURL;
-            console.log(downloadURL);
-            resolve(downloadURL);
-            });
-        }.bind(this)); 
-    },
-
-
-    _resizeThis: function(image, type){
-            return new Promise(function(resolve, reject){
-            
-            // Make a new image and set its source
-            img = new Image();
+    _loadImage: function(event){
+        img = new Image();
+        if(typeof event == "string"){
             img.crossOrigin = "Anonymous";
-
-            if(typeof image == "string"){
-                img.src = image;
-            } else {
-                img.src = URL.createObjectURL(image);
-            }
-
-            // Wait for the image to the load the src
-            img.onload=function(){
-            
-            // Make canvas number 1
-                var canvas1 = document.createElement('canvas');
-                var context1 = canvas1.getContext('2d');
-            // if half of the image width is greater than the resize size
-                if(img.width * 0.5 > this.resizeWidth & img.height * 0.5 > this.resizeHeight){
-                    canvas1.width = img.width * 0.5;
-                    canvas1.height = img.height * 0.5;
-                    context1.drawImage(img, 0, 0, canvas1.width, canvas1.height);
-                    // if
-                    if(img.width * 0.5 > this.resizeWidth & img.height * 0.5 > this.resizeHeight){
-                            context1.drawImage(canvas1,0,0,canvas1.width * 0.5,canvas1.height * 0.5);
-                    }
-                }
-            
-            // Make the first canvas and size it to the resize size
-            var canvas2 = document.createElement('canvas');
-            var context2 = canvas2.getContext("2d");
-            canvas2.width = this.resizeWidth;
-            canvas2.height = this.resizeHeight;
-            context2.drawImage(canvas1,0,0,canvas1.width * 0.5, canvas1.height * 0.5, 0,0,canvas2.width,canvas2.height);
+            img.src = event; 
+        } else {
+            img.src = URL.createObjectURL(event.target.files[0]);
+        }
         
-                // convert the canvas to a blob 
-                canvas2.toBlob(function(blob) {
-                    var myblob = blob;
-                    // figure out the etnesion from the type
-                    var extension = blob.type.split("/");
-                    var epoch = new Date().getTime();
-                    // generate the file name
-                    if(this.overWrite){
-                        myblob.name = this.fileName+'_'+this.resizeWidth+'_'+this.resizeHeight+'.'+extension[1];  
-                    } else{
-                        myblob.name = epoch+'_'+this.fileName+'_'+this.resizeWidth+'_'+this.resizeHeight+'.'+extension[1];  
-                    }
-  
-                    var reader = new window.FileReader();
-                    reader.readAsDataURL(myblob); 
-                    reader.onloadend = function() {  
-                        this.base64 = reader.result
-                        console.log(this);
-                        resolve(myblob);
-                    }.bind(this)        
-                }.bind(this)); // End canvas to blob
-            }.bind(this) // End on image load
-            }.bind(this)); // End Promise
-        } // End function "resizeThis" 
+        img.onload = function(){
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            context.drawImage(img, 0, 0, img.width, img.height);                
+            var x = this._resizeBlob(canvas, this.maxSize, img.width, img.height, this.makeSquare, this.maxSize);
+        }.bind(this)
+    },
+
+    _resizeBlob: function(canvas, targetSize, width, height, makeSquare, maxSize){
+            var largestDim = Math.max(width, height);
+            var canvas = canvas;
+            var halved = false;
+            if (largestDim * 2 > maxSize){
+                    var canvas2 = document.createElement('canvas');
+                    var context2 = canvas2.getContext('2d');
+                    context2.drawImage(canvas, 0, 0, width * 0.5, height * 0.5);
+                    var halved = true;
+                    var canvas = canvas2;                
+            } 
+            // Now resize it to the target size and square it if needed
+
+            // return the blob and the canvas, the canvs we pass around the blob we add to an array for upload
+            var blob = canvas.toBlob(function(blob) {
+                console.log(blob);
+                console.log(canvas);
+                return(blob)
+            });
+    }, // End resize blob
+
 
 
     });

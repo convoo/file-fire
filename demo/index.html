@@ -5,68 +5,41 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-
     <link rel="import" href="../image-fire.html">
     <link rel="import" href="../../polymerfire/firebase-app.html">
     <link rel="import" href="../../paper-dialog/paper-dialog.html">
-
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
   </head>
   <body>
-
-
-  <div>
-      <h3>Single File Upload & Resize</h3>
-       
-   
-
-          <dom-module id="demo">
+<div>
+    <h3>Single File Upload & Resize</h3>
+        <dom-module id="demo">
         <template is="dom-bind" id="demo-template">
-          <firebase-app
+        <firebase-app
             api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
             auth-domain="convoofire.firebaseapp.com"
             database-url="https://convoofire.firebaseio.com"
             storage-bucket="convoofire.appspot.com"
             >
-          </firebase-app>
-          <image-fire 
-            storage-path="/u"
-            resize-width="50"
-            resize-height="50"
-            file-name="test"
-            progress="{{progress}}"
+        </firebase-app>
+        <image-fire 
+            storage-path="/u/test"
+            src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+            src-file
             over-write
-            image-from="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
-            base64="{{base64}}"
-          ></image-fire>
-          <div>{{progress}}</div>
-           <img src="{{base64}}">
+            make-square
+            max-size="120"
+            progress="{{progress}}"
+            placeholder="{{base64}}"
+        ></image-fire>
+        <div>{{progress}}</div>
+        <img src="{{base64}}">
         </template>
-         </dom-module>
-
-    
-      
+        </dom-module>
     </div>
 
   </body>
 </html>
-
-<!--
-file name to be combined with storage path, 
-if the storage ends with a / then use the original file name.
-
-rename image-from to src-url
-add src for pointing to the file upload form thing
-
-overwrite to boolean default to false
-
-split componants to image fire and and image fire upload 
-
-if there is not src or no srcurl it will get the image from the server
-
-possible seperate file fire upload componant 
--->
