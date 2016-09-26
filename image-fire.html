@@ -9,9 +9,7 @@
         </style>
         <input type="file" id="file" multiple accept="image/*">
         
-        <template is="dom-repeat" items="{{images}}">
-          <img src="{{item}}">
-        </template>
+
         
     </template>
 
@@ -142,7 +140,13 @@
 
     ready: function() {
         if(!this.srcUrl && !this.srcFile){
-            // GET IMAGE FROM STORAGE PATH
+            var storage = firebase.storage();
+            var storageRef = storage.ref();
+            storageRef.child(this.storagePath).getDownloadURL().then(function(url) {
+                console.log(url);
+            }).catch(function(error) {
+                console.log(error);
+            });
         }
     },
 
@@ -172,7 +176,6 @@
      * Resizes the image and adds it to an array of images to return
      */
     _resize: function(canvas, startWidth, startHeight){
-      console.log("Started resize");
       var targetWidth, targetHeight;
       var currentWidth = startWidth;
       var currentHeight = startHeight;
@@ -224,7 +227,6 @@
       }
 
       for (i = 0; i < sizes.length; i++) { 
-        console.log(sizes[i]*this.resizeWidth, sizes[i]* this.resizeHeight);
         canvas = this._loopToTargetSize(canvas, sizes[i]*this.resizeWidth, sizes[i]* this.resizeHeight);
         canvases.push(canvas);
       }
@@ -234,14 +236,14 @@
       this.placeholder = canvas.toDataURL();
 
       this.images = [];
-      var div = document.createElement('div');
-      this.appendChild(div);
+    //   var div = document.createElement('div');
+    //   this.appendChild(div);
       for (i = 0; i < canvases.length; i++) { 
         canvases[i].toBlob(function(blob){
           this.images.push(blob);
           var j = document.createElement('img');
           j.src= window.URL.createObjectURL( blob );;
-          div.appendChild(j);
+       //   div.appendChild(j);
         }.bind(this))
       }
       console.log(this.images);
