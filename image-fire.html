@@ -5,42 +5,50 @@
         <style>
             :host {
               display: block;
-              height:400px;
-              width:400px;
-              border: 1px solid black;
+              height: 100%;
+              width: 100%;
               position:relative;
             }
             #dropZone {
               display:none;
               display:var(--file-display);
-              height: 400px;
-              width: 400px;
+              height: 100%;
+              width: 100%;
               position:absolute;
               top:0px;
               left:0px;
-            }
-            #dropz{
-                background-color: black ;
-                width:400px;
-                height:400px;
-                display:block;
-                opacity:0.5;
+              background: #e9f0fa;
             }
 
             #filez{
               display:block;
-              background-color:black;
-              width:400px;
-              height:400px;
-              position: relative;
-              top:-400px;
+              height: 100%;
+              width: 100%;
+              position: absolute;
+              top:0px;
+              left:0px;
               opacity:0;
               z-index:200;
+              background:black;
             }
+            #border{
+              color: #b1bfd4;
+              width:calc(100% - 46px);
+              height:calc(50% - 46px);
+              border: 3px dashed #b1bfd4;
+              margin:20px;
+              padding-top:50%;
+              text-align: center;
+              size: 18px;
+            }
+
         </style>
 
 <div id ="dropZone">
-  <label id="dropz" for="filez"></label>
+  <div id="border">
+    <b>Upload an Image</b></br>
+    <p>jpg, png, gif</p>
+  </div>
   <input type="file" id="filez" multiple accept="image/*">
 </div>
 <content></content>
@@ -189,11 +197,13 @@
     _exit: function(){
       this.customStyle["--file-display"] = "none";
       this.updateStyles();
+      console.log('exit');
     },
 
     _drop: function(e){
         this.customStyle["--file-display"] = "none";
         this.updateStyles();
+        console.log('drop');
     },
 
     ready: function() {
@@ -213,6 +223,7 @@
      * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
      */
     _loadImage: function(event){
+      console.log('upload');
         img = new Image();
         if(typeof event == "string"){
             img.crossOrigin = "Anonymous";
