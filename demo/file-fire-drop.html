@@ -27,10 +27,22 @@
         </firebase-app>
         <file-fire-drop
           app-name="demo"
-          path="/my/path/to/file.jpg"
-          file="{{myFile}}"
-          file-url="{{myFileURL}}"
-        ></file-fire-drop>
+          storage-path="/u/test_50_50.png"
+          src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+          src-file
+          over-write
+          max-dimension="200"
+          resize-height="16"
+          resize-width="16"
+          max-scale="3"
+          progress="{{progress}}"
+          placeholder="{{base64}}"
+          images="{{images}}"
+        >
+        Some text and some more text</br>
+        Some text and some more text</br>
+        Some text and some more text</br>
+        </file-fire-drop>
 
         </template>
         </dom-module>

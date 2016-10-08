@@ -1,0 +1,264 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<script>
+  /**
+    * An element that allows simple upload of an image to Firebase storage
+    * Example:
+    * ```
+    * <firebase-app
+    *   name="demo"
+    *   api-key="API_KEY"
+    *   auth-domain="AUTH_DOMAIN"
+    *   database-url="DATABASE_URL"
+    *   storage-bucket="convoofire.appspot.com">
+    * </firebase-app>
+    * <!-- A file-fire element allowing image upload to firebase storage -->
+    *  <file-fire 
+    *       storage-path="/u/test"
+    *       src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+    *       over-write
+    *       max-size="500"
+    *       progress="{{progress}}"
+    *       base64="{{base64}}"
+    *   ></file-fire>
+    * ```
+    *
+    *
+    * @demo demo/file-fire.html
+    */
+FileFireBehavior = {
+  properties: {
+    /**
+      * `appName` represents the name of the firebase-app that was instantiated
+      */
+    appName: {
+        type: String,
+    },
+    /**
+      * `storagePath` represents where the file should be saved, if the path doesnt exist it will be created
+      */
+    storagePath: {
+        type: String,
+    },
+    /**
+      * `srcUrl` represents where to fetch a file from if it is not local
+      */
+    srcUrl: {
+        type: String,
+        observer: "_loadImage",
+    },
+    /**
+      * `srcFile` represents the file blob stored in a variable
+      */
+    srcFile: {
+        type: Boolean,
+        value: false,
+    },
+    /**
+      * `overwrite` represents if a file can be overwritten or not, when set to false the file name will be prefixed with the curent epoch
+      */
+    overWrite: {
+        type: Boolean,
+        value: false,
+    },
+    /**
+      * `onlyImages` represents whether to accept only images
+      */
+    onlyImages: {
+        type: Boolean,
+        value: false,
+    },
+    /**
+      * `resizeHeight` represents the height to resize an image to, if no resize values provided, image swill be uploaded as is
+      */
+    resizeHeight:{
+      type: Number
+    },
+    /**
+      * `resizeWidth` represents the width to resize an image to, if no resize values provided, images will be uploaded as is
+      */
+    resizeWidth:{
+      type: Number
+    },
+    /**
+      * `maxScale` represents the integer of the max scale needed. Ex. Setting a max scale of 3 and scale steps of 1 will return 1x, 2x and 3x images of the resized dimension
+      */
+    maxScale:{
+      type: Number,
+      value: 1
+    },
+    /**
+      * `scaleStep` represents the steps to take for each image resize. Ex. Setting a max scale of 2 and scale steps of 0.5 will return 1x, 1.5x and 2x images of the resized dimension
+      */
+    scaleStep:{
+      type: Number,
+      value: 1
+    },
+    /**
+      * `maxDimension` represents the maximum width or height to be allowed for an image
+      */
+    maxDimension: {
+        type: Number,
+        value: 0
+    },
+    /**
+      * `maxSize` represents the maximum size of a file to allow
+      */
+    maxSize: {
+        type: Number,
+        value: 0
+    },
+    /**
+      * `progress` represents a percentage value for the file upload
+      */
+    progress: {
+        type: Number,
+        reflectToAttribute: true,
+        notify: true,
+    },
+    /**
+      * `placeholder` is a base64 string representing 10% resize of the specified resized image
+      */
+    placeholder: {
+        type: String,
+        reflectToAttribute: true,
+        notify: true,
+    },
+    /**
+      * `images` is an array of images that have been resized based on the desired inputs
+      */
+    images: {
+      type: Array,
+      reflectToAttribute: true,
+      notify: true
+    }
+  },
+
+  /**
+    * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
+    */
+  _loadImage: function(event){
+    console.log('upload');
+    img = new Image();
+    if(typeof event == "string"){
+        img.crossOrigin = "Anonymous";
+        img.src = event; 
+    } else {
+        img.src = URL.createObjectURL(event.target.files[0]);
+    }
+    
+    img.onload = function(){
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        context.drawImage(img, 0, 0, img.width, img.height);                
+        var x = this._resize(canvas, img.width, img.height);
+    }.bind(this)
+  },
+
+  /**
+   * Resizes the image and adds it to an array of images to return
+   */
+  _resize: function(canvas, startWidth, startHeight){
+    var targetWidth, targetHeight;
+    var currentWidth = startWidth;
+    var currentHeight = startHeight;
+
+    var largestDimension = Math.max(startWidth, startHeight)
+    // If the image has a dimension larger than maxDimension
+    if (largestDimension > this.maxDimension){
+      // Get the desired Dimensions
+      // If the width is larger, calculate the height and use maxDimension for the width
+      if (largestDimension == startWidth){
+        targetWidth = this.maxDimension;
+        targetHeight = startHeight * this.maxDimension / startWidth;
+      } else { // Else, calculate the width and use maxDimension for the height
+        targetWidth = startWidth * this.maxDimension / startHeight;
+        targetHeight = this.maxDimension;
+      }
+      canvas = this._loopToTargetSize(canvas, targetWidth, targetHeight, startWidth, startHeight)
+    }
+
+    // Add the original image to the array of canvases
+    var originalImage = canvas;
+    canvases = [];
+    canvases.push(originalImage);
+
+    // If the user does not provide both resize width and height, set them based on aspect ratio. Otherwise, do not resize image
+    if(this.resizeWidth == null && this.resizeHeight != null){
+      this.resizeWidth = currentWidth * this.resizeHeight / currentHeight;
+    }else if(this.resizeWidth != null && this.resizeHeight == null){
+      this.resizeHeight = currentHeight * this.resizeWidth / currentWidth;
+    }else if(this.resizeWidth == null && this.resizeHeight == null){
+      this.resizeWidth = currentWidth;
+      this.resizeHeight = currentHeight;
+    }
+
+    // Resize the image to maxScale * resize-height and width
+    canvas = this._loopToTargetSize(canvas, this.maxScale*this.resizeWidth, this.maxScale* this.resizeHeight);
+    var currentImage = canvas.toBlob(function(blob) {
+        return(blob);
+    });
+    canvases.push(canvas);
+
+    // Make all the scales using scaleStep and save each of those into an array
+    var sizes = [];
+    var range = this.maxScale - 1;
+    var currentSize = this.maxScale;
+    while (currentSize != 1){
+      sizes.push(currentSize-this.scaleStep);
+      currentSize = currentSize - this.scaleStep;
+    }
+
+    for (i = 0; i < sizes.length; i++) { 
+      canvas = this._loopToTargetSize(canvas, sizes[i]*this.resizeWidth, sizes[i]* this.resizeHeight);
+      canvases.push(canvas);
+    }
+
+    // Get the 10% base64 placeholder and return it to placeholder
+    canvas = this._loopToTargetSize(canvas, Math.max(0.1*this.resizeWidth,8), Math.max(0.1* this.resizeHeight,8));
+    this.placeholder = canvas.toDataURL();
+
+    this.images = [];
+  //   var div = document.createElement('div');
+  //   this.appendChild(div);
+    for (i = 0; i < canvases.length; i++) { 
+      canvases[i].toBlob(function(blob){
+        this.images.push(blob);
+        var j = document.createElement('img');
+        j.src= window.URL.createObjectURL( blob );;
+      //   div.appendChild(j);
+      }.bind(this))
+    }
+    console.log(this.images);
+
+  }, // End resize blob
+
+  _resizeCanvas: function(canvas, width, height){
+    var canvas2 = document.createElement('canvas');
+    var context2 = canvas2.getContext('2d');
+    canvas2.width = width;
+    canvas2.height = height;
+    context2.drawImage(canvas, 0, 0, width, height);
+    return canvas2;
+  },
+
+  _loopToTargetSize: function(canvas, targetWidth, targetHeight, currentWidth, currentHeight){
+    var targetSizeReached = false
+    // Reduce the image size to fit the maxDimension
+    while (!targetSizeReached){
+      // If currentHeight is more than double the targetHeight and the currentWidth is more than double the targetWidth, halve the image
+      if (currentHeight > 1.25 * targetHeight && currentWidth > 1.25* targetWidth){
+        currentWidth = 0.8 * currentWidth;
+        currentHeight = 0.8 * currentHeight;
+        canvas = this._resizeCanvas(canvas, currentWidth, currentHeight);
+      } else { // Else Resize to maxDimension and set targetSizeReached to true
+        canvas = this._resizeCanvas(canvas, targetWidth, targetHeight);
+        targetSizeReached = true;
+      }
+    }
+    return canvas;
+  }
+};
+</script>
