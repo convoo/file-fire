@@ -4,11 +4,23 @@
     <template>
         <style>
             :host {
-                display: block;
+                display: inline-block;
+                background-color:blue;
+                min-height:100%;
+                position:relative;
+                top:0px;
+                left:0px;
+                bottom:0px;
+                right:0px;
             }
+            .drop{
+                background:green;
+            }
+
+
         </style>
-        <input type="file" id="file" multiple accept="image/*">
-        
+        <input type="file" id="file" class="drop" multiple accept="image/*">
+        <content></content>
 
         
     </template>
@@ -135,10 +147,17 @@
     },
     
     listeners: {
-        'file.change' : '_loadImage'
+        'file.change' : '_loadImage',
+        'file.drop' : '_hover'
+    },
+
+    _hover: function(){
+        console.log('Fire!');
     },
 
     ready: function() {
+        var parent = Polymer.dom(this).parentNode;
+
         if(!this.srcUrl && !this.srcFile){
             var storage = firebase.storage();
             var storageRef = storage.ref();
