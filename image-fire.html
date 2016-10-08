@@ -187,11 +187,24 @@
     },
 
 
+    _hasAFile: function(e){
+      if (e.dataTransfer.types) {
+        for (var i=0; i<e.dataTransfer.types.length; i++) {
+          if (e.dataTransfer.types[i] == "Files") {
+            return true;
+          }
+        }
+      }
+      return false
+    },
+
     _enter: function(e){
-      e.stopPropagation();
-      e.preventDefault();
-      this.customStyle["--file-display"] = "block";
-      this.updateStyles();
+      if(this._hasAFile(e)){
+        e.stopPropagation();
+        e.preventDefault();
+        this.customStyle["--file-display"] = "block";
+        this.updateStyles();
+      }
     },
 
     _exit: function(){
