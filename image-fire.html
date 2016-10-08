@@ -4,50 +4,46 @@
     <template>
         <style>
             :host {
-                display: block;
-                min-height:100%;
-                width:100%;
-                position:relative;
-                top:0px;
-                left:0px;
-                bottom:0px;
-                right:0px;
-                --host-opacity:0;
-                opacity:var(--host-opacity);
-                --file-display: none;
-                background:red;
-                z-index:10000
+              display: block;
+              height:400px;
+              width:400px;
+              border: 1px solid black;
+              position:relative;
             }
-            .drop{
-                background:green;
-                width:100%;
-                height:400%;
-                opacity:0;
-                position:absolute;
-                z-index: -1
-            }
-            #myLabel {
+            #dropZone {
+              display:none;
               display:var(--file-display);
               height: 400px;
-              width: 100%;
-              background:blue;
+              width: 400px;
+              position:absolute;
+              top:0px;
+              left:0px;
             }
-            #file{
-              display:var(--file-display);
+            #dropz{
+                background-color: black ;
+                width:400px;
+                height:400px;
+                display:block;
+                opacity:0.5;
             }
 
-
-
+            #filez{
+              display:block;
+              background-color:black;
+              width:400px;
+              height:400px;
+              position: relative;
+              top:-400px;
+              opacity:0;
+              z-index:200;
+            }
         </style>
 
-        <label for="file">
-          <div id ="myLabel">
-            here
-          </div>
-          </label>
-          <input type="file" id="file" class="drop" multiple accept="image/*">
-
-        <content></content>
+<div id ="dropZone">
+  <label id="dropz" for="filez"></label>
+  <input type="file" id="filez" multiple accept="image/*">
+</div>
+<content></content>
 
         
     </template>
@@ -174,46 +170,34 @@
     },
     
     listeners: {
-        'file.change' : '_loadImage',
-        'myLabel.dragenter' : '_dragover',
-        'myLabel.drop' : '_drop',
+        'filez.change' : '_loadImage',
+        'filez' : '_enter',
         'dragenter' : '_enter',
-        'dragleave' : '_exit'
+        'dropZone.dragenter' : '_enter',
+        'dropZone.dragleave' : '_exit',
+        'filez.drop' : '_drop'
     },
 
 
     _enter: function(e){
-        e.stopPropagation();
+      e.stopPropagation();
       e.preventDefault();
       this.customStyle["--file-display"] = "block";
-        this.customStyle["--host-opacity"] = "0.8";
-        this.updateStyles();
-        console.log('_enter');
+      this.updateStyles();
     },
 
     _exit: function(){
-        this.customStyle["--host-opacity"] = "0";
-        this.customStyle["--file-display"] = "none";
-        this.updateStyles();
-        console.log('_exit');
-    },
-
-    _dragover: function(e){
-      e.stopPropagation();
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-        console.log('_dragover');
+      this.customStyle["--file-display"] = "none";
+      this.updateStyles();
     },
 
     _drop: function(e){
-        console.log('_drop');
-        e.stopPropagation();
-        e.preventDefault();
+        this.customStyle["--file-display"] = "none";
+        this.updateStyles();
     },
 
     ready: function() {
         var parent = Polymer.dom(this).parentNode;
-
         if(!this.srcUrl && !this.srcFile){
             var storage = firebase.storage();
             var storageRef = storage.ref();
