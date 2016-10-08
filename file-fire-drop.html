@@ -11,14 +11,13 @@
               position:relative;
             }
             #dropZone {
-              display:none;
-              display:var(--file-display);
+              display:var(--file-fire-display, none);
               height: 100%;
               width: 100%;
               position:absolute;
               top:0px;
               left:0px;
-              background: #e9f0fa;
+              background: var(--file-fire-dropzone-background,#e9f0fa);
             }
 
             #filez{
@@ -33,10 +32,10 @@
               background:black;
             }
             #border{
-              color: var(--file-fire-border-color,#b1bfd4);
+              color: var(--file-fire-color,#b1bfd4);
               width:calc(100% - 46px);
               height:calc(50% - 46px);
-              border: 3px dashed var(--file-fire-border-color,#b1bfd4);
+              border: var(--file-fire-border,3px dashed #b1bfd4);
               margin:20px;
               padding-top:50%;
               text-align: center;
@@ -49,7 +48,14 @@
   <div id="border">
     <p>{{hoverText}}</p>
   </div>
-  <input type="file" id="filez" multiple accept="image/*">
+  
+  <template is="dom-if" if={{onlyImages}}>
+    <input type="file" id="filez" accept="image/*" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
+  </template>
+
+  <template is="dom-if" if={{!onlyImages}}>
+    <input type="file" id="filez" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
+  </template>
 </div>
 <content></content>
 
@@ -92,16 +98,28 @@
         hoverText: {
           type: String,
           value: "Upload a file."
+        },
+        /**
+        * `alwaysShow` shows the drop file section by default. This means content inside the element will not be shown.
+        */
+        alwaysShow: {
+          type: Boolean,
+          value: false,
+          observer: "_checkShow"
         }
       },
     
     listeners: {
-        'filez.change' : '_loadImage',
-        'filez' : '_enter',
         'dragenter' : '_enter',
         'dropZone.dragenter' : '_enter',
-        'dropZone.dragleave' : '_exit',
-        'filez.drop' : '_drop'
+        'dropZone.dragleave' : '_exit'
+    },
+
+    _checkShow: function(newShow, oldShow){
+      if(newShow){
+        this.customStyle["--file-fire-display"] = "block";
+        this.updateStyles();
+      }
     },
 
 
@@ -117,24 +135,28 @@
     },
 
     _enter: function(e){
-      if(this._hasAFile(e)){
+      if(this._hasAFile(e) && !this.alwaysShow){
         e.stopPropagation();
         e.preventDefault();
-        this.customStyle["--file-display"] = "block";
+        this.customStyle["--file-fire-display"] = "block";
         this.updateStyles();
       }
     },
 
     _exit: function(){
-      this.customStyle["--file-display"] = "none";
-      this.updateStyles();
-      console.log('exit');
+      if(!this.alwaysShow){
+        this.customStyle["--file-fire-display"] = "none";
+        this.updateStyles();
+        console.log('exit');
+      }
     },
 
     _drop: function(e){
-        this.customStyle["--file-display"] = "none";
+        if(!this.alwaysShow){
+        this.customStyle["--file-fire-display"] = "none";
         this.updateStyles();
         console.log('drop');
+      }
     }
 
   });

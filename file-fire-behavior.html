@@ -1,31 +1,5 @@
-<link rel="import" href="../polymer/polymer.html">
-
 <script>
-  /**
-    * An element that allows simple upload of an image to Firebase storage
-    * Example:
-    * ```
-    * <firebase-app
-    *   name="demo"
-    *   api-key="API_KEY"
-    *   auth-domain="AUTH_DOMAIN"
-    *   database-url="DATABASE_URL"
-    *   storage-bucket="convoofire.appspot.com">
-    * </firebase-app>
-    * <!-- A file-fire element allowing image upload to firebase storage -->
-    *  <file-fire 
-    *       storage-path="/u/test"
-    *       src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
-    *       over-write
-    *       max-size="500"
-    *       progress="{{progress}}"
-    *       base64="{{base64}}"
-    *   ></file-fire>
-    * ```
-    *
-    *
-    * @demo demo/file-fire.html
-    */
+/** @polymerBehavior FileFire.FileFireBehavior */
 FileFireBehavior = {
   properties: {
     /**
@@ -66,7 +40,7 @@ FileFireBehavior = {
       */
     onlyImages: {
         type: Boolean,
-        value: false,
+        value: false
     },
     /**
       * `resizeHeight` represents the height to resize an image to, if no resize values provided, image swill be uploaded as is
@@ -232,6 +206,9 @@ FileFireBehavior = {
       }.bind(this))
     }
     console.log(this.images);
+
+    // Upload all of images to firebase at the specified path
+
 
   }, // End resize blob
 
