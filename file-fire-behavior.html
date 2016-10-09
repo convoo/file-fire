@@ -99,9 +99,9 @@ FileFireBehavior = {
         notify: true,
     },
     /**
-      * `images` is an array of images that have been resized based on the desired inputs
+      * `files` is an array of images that have been resized based on the desired inputs
       */
-    images: {
+    files: {
       type: Array,
       reflectToAttribute: true,
       notify: true
@@ -112,23 +112,37 @@ FileFireBehavior = {
     * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
     */
   _loadImage: function(event){
-    console.log('upload');
-    img = new Image();
-    if(typeof event == "string"){
-        img.crossOrigin = "Anonymous";
-        img.src = event; 
-    } else {
-        img.src = URL.createObjectURL(event.target.files[0]);
+
+    var type = event.target.files[0].type;
+    if(type.startsWith("image")){
+      if(this.resizeWidth == null || this.resizeHeight == null){
+        
+
+      }else{
+        img = new Image();
+        if(typeof event == "string"){
+          img.crossOrigin = "Anonymous";
+          img.src = event; 
+        } else {
+          img.src = URL.createObjectURL(event.target.files[0]);
+        }    
+        img.onload = function(){
+          var canvas = document.createElement('canvas');
+          var context = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          context.drawImage(img, 0, 0, img.width, img.height);                
+          var x = this._resize(canvas, img.width, img.height);
+        }.bind(this)
+      }
+    }else{
+      var file = URL.createObjectURL(event.target.files[0]);
+      console.log(this.path);
+      console.log(file);
+      this._uploadThis(file, this.path);
     }
-    
-    img.onload = function(){
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        context.drawImage(img, 0, 0, img.width, img.height);                
-        var x = this._resize(canvas, img.width, img.height);
-    }.bind(this)
+
+
   },
 
   /**
@@ -205,6 +219,7 @@ FileFireBehavior = {
     
     Promise.all(promises).then(function(b){
       this._uploadMultiple(b, sizes)
+      this.files = b;
     }.bind(this));
 
   }, // End resize blob
@@ -221,6 +236,7 @@ FileFireBehavior = {
   },
 
    _uploadThis: function(file, storagePath){
+     console.log(file);
      console.log(storagePath)
         return new Promise(function(resolve, reject){
             // Get a reference to the storage service, which is used to create references in your storage bucket.
