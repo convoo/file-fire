@@ -28,10 +28,16 @@
         <file-fire
           app-name="demo"
           path="/my/path/to/file.jpg"
-          file="{{myFile}}"
-          file-url="{{myFileURL}}"
+          files="{{myFiles}}"
+          download-url="{{dl}}"
         ></file-fire>
-
+        
+        <template is="dom-repeat" items={{dl}}>
+          {{item}}
+          
+        </template>
+        
+        {{dl}}
         </template>
         </dom-module>
     </div>
