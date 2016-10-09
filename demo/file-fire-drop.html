@@ -25,25 +25,33 @@
             storage-bucket="convoofire.appspot.com"
             >
         </firebase-app>
-        <file-fire-drop
-          app-name="demo"
-          storage-path="/u/test_50_50.png"
-          src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
-          src-file
-          over-write
-          max-dimension="200"
-          resize-height="16"
-          resize-width="16"
-          max-scale="3"
-          progress="{{progress}}"
-          placeholder="{{base64}}"
-          images="{{images}}"
-        >
-        Some text and some more text</br>
-        Some text and some more text</br>
-        Some text and some more text</br>
-        </file-fire-drop>
 
+        <div style="height:400px">
+            <file-fire-drop
+              app-name="demo"
+              storage-path="/u/test_50_50.png"
+              src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+              src-file
+              over-write
+              max-dimension="200"
+              resize-height="16"
+              resize-width="16"
+              max-scale="3"
+              progress="{{progress}}"
+              placeholder="{{base64}}"
+              images="{{images}}"
+            >
+            Some text and some more text</br>
+            Some text and some more text</br>
+            Some text and some more text</br>
+            </file-fire-drop>
+        </div>
+
+        </br>
+            <hr>
+        </br>
+
+    <div style="height:400px">
         <file-fire-drop
           app-name="demo"
           storage-path="/u/test_50_50.png"
@@ -61,6 +69,7 @@
         >
         This text won't be shown
         </file-fire-drop>
+    </div>
 
         </template>
         </dom-module>
