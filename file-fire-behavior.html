@@ -11,7 +11,7 @@ FileFireBehavior = {
     /**
       * `storagePath` represents where the file should be saved, if the path doesnt exist it will be created
       */
-    storagePath: {
+    path: {
         type: String,
     },
     /**
@@ -194,23 +194,89 @@ FileFireBehavior = {
     canvas = this._loopToTargetSize(canvas, Math.max(0.1*this.resizeWidth,8), Math.max(0.1* this.resizeHeight,8));
     this.placeholder = canvas.toDataURL();
 
-    this.images = [];
-  //   var div = document.createElement('div');
-  //   this.appendChild(div);
-    for (i = 0; i < canvases.length; i++) { 
-      canvases[i].toBlob(function(blob){
-        this.images.push(blob);
-        var j = document.createElement('img');
-        j.src= window.URL.createObjectURL( blob );;
-      //   div.appendChild(j);
-      }.bind(this))
-    }
-    console.log(this.images);
+    var p = new Promise(function(resolve, reject){
+      resolve ([])
+    });
 
-    // Upload all of images to firebase at the specified path
-
+    p.then(function(images){
+      for (i = 0; i < canvases.length; i++) { 
+        canvases[i].toBlob(function(blob){
+          images.push(blob);
+          var j = document.createElement('img');
+          j.src= window.URL.createObjectURL( blob );;
+        //   div.appendChild(j);
+        })
+      }
+      return images;
+    }).then(function(images){
+      this.images=images;
+      this._uploadMultiple(images);
+    }.bind(this)).catch(function(err){
+      console.log(err)
+    })
 
   }, // End resize blob
+
+  _uploadMultiple: function (files) {
+    console.log(this.images);
+    for (i = 0; i < files.length; i++) { 
+      this._uploadThis(files[i], this.path);
+      console.log(this.path);
+      console.log(files[i]);
+    }
+  },
+
+   _uploadThis: function(file, storagePath){
+     console.log(storagePath)
+        return new Promise(function(resolve, reject){
+            // Check the Stprage path ends in a /     
+            if(storagePath.slice(-1) !== '/'){
+                storagePath = storagePath+'/'
+            }
+            // Get a reference to the storage service, which is used to create references in your storage bucket.
+            var storage = firebase.storage();
+            // Create a storage reference from our storage service.
+            var storageRef = storage.ref();
+            // Upload file and metadata to the object 'images/mountains.jpg'
+            var uploadTask = storageRef.child(storagePath+file.name).put(file);
+            // Listen for state changes, errors, and completion of the upload.
+            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+            function(snapshot) {
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                switch (snapshot.state) {
+                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                    console.log('Upload is paused');
+                    break;
+                case firebase.storage.TaskState.RUNNING: // or 'running'
+                    console.log('Upload is running');
+                    break;
+                }
+            }, function(error) {
+            switch (error.code) {
+                case 'storage/unauthorized':
+                    console.log('Please adjust the storage rules in the Firebase console');
+                    reject('storage/unauthorized');
+                break;
+                case 'storage/canceled':
+                    console.log('Oopps! You canceled the upload');
+                    reject('storage/canceled');
+                break;
+                case 'storage/unknown':
+                    console.log('Unknown Error: '+ error.serverResponse);
+                    reject('storage/unknown');
+                break;
+            }
+            }, function() {
+            // Upload completed successfully, now we can get the download URL
+            var downloadURL = uploadTask.snapshot.downloadURL;
+            console.log(downloadURL);
+            resolve(downloadURL);
+            });
+        }); 
+    },
+
 
   _resizeCanvas: function(canvas, width, height){
     var canvas2 = document.createElement('canvas');
