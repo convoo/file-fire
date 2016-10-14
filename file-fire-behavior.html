@@ -121,8 +121,17 @@ FileFireBehavior = {
     * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
     */
   _loadImage: function(event){
-
-    var type = event.target.files[0].type;
+    var type;
+    if(this.srcUrl != null){
+      fetch(this.srcUrl).then(function(response){
+        return response.blob()
+      }).then(function(b){
+        console.log(b);
+        type = b.type;
+      });
+    }else {
+      type = event.target.files[0].type;
+    }
     if(type.startsWith("image")){
       if(this.resizeWidth == null || this.resizeHeight == null){
         var file = event.target.files[0];
