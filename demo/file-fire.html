@@ -38,6 +38,13 @@
         </template>
         
         {{dl}}
+
+        <script>
+          document.querySelector('file-fire').addEventListener('upload', function (e) {
+            console.log(e); // true
+          })
+        </script>
+
         </template>
         </dom-module>
     </div>

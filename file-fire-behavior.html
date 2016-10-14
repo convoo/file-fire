@@ -126,7 +126,12 @@ FileFireBehavior = {
     if(type.startsWith("image")){
       if(this.resizeWidth == null || this.resizeHeight == null){
         var file = event.target.files[0];
-        this._uploadThis(file, this.path);
+        this._uploadThis(file, this.path).then(function(){
+          this.fire("upload", {
+            "placeholder": this.placeholder,
+            "urls": this.downloadUrl
+          });
+        }.bind(this));
       }else{
         img = new Image();
         if(typeof event == "string"){
@@ -142,11 +147,22 @@ FileFireBehavior = {
           canvas.height = img.height;
           context.drawImage(img, 0, 0, img.width, img.height);                
           var x = this._resize(canvas, img.width, img.height);
+          x.then(function(){
+            this.fire("upload", {
+              "placeholder": this.placeholder,
+              "url": this.downloadUrl
+            });
+          }.bind(this));
         }.bind(this)
       }
     }else{
       var file = event.target.files[0];
-      this._uploadThis(file, this.path);
+      this._uploadThis(file, this.path).then(function(){
+          this.fire("upload", {
+            "placeholder": this.placeholder,
+            "urls": this.downloadUrl
+          });
+        }.bind(this));
     }
 
   },
@@ -223,7 +239,7 @@ FileFireBehavior = {
       }));
     }
     
-    Promise.all(promises).then(function(b){
+    return Promise.all(promises).then(function(b){
       this._uploadMultiple(b, sizes)
       this.files = b;
     }.bind(this));

@@ -1,5 +1,5 @@
 {
-  "name": "image-fire",
+  "name": "file-fire",
   "version": "0.0.1",
   "authors": [
     "Will in China <email.will.in.china@gmail.com>",
@@ -11,7 +11,7 @@
     "polymer",
     "seed"
   ],
-  "main": "image-fire.html",
+  "main": "file-fire.html",
   "license": "MIT",
   "homepage": "https://convoo.github.io/image-fire/",
   "dependencies": {
