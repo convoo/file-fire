@@ -15,7 +15,7 @@
   </head>
   <body>
 <div>
-    <h3>Dropping a file to upload to FireBase</h3>
+    
         <dom-module id="demo">
         <template is="dom-bind" id="demo-template">
         <firebase-app
@@ -26,7 +26,8 @@
             >
         </firebase-app>
 
-        <div style="height:400px">
+        <h3>Grag Over Dropp a file to upload to FireBase</h3>
+        <div style="height:400px; width:400px; border: 1px solid black">
             <file-fire-drop
               app-name="demo"
               path="/u/test.png"
@@ -44,12 +45,12 @@
         </br>
             <hr>
         </br>
+<h3>Always shown drag and drop </h3>
 
-    <div style="height:400px">
+    <div style="height:300px; width:300px">
         <file-fire-drop
           app-name="demo"
           path="/u/test.png"
-          src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
           src-file
           over-write
           max-dimension="200"
@@ -64,6 +65,29 @@
         This text won't be shown
         </file-fire-drop>
     </div>
+<hr>
+
+<h3>Be invisible and fetch a remote file</h3>
+
+    <div style="height:0px; width:0px">
+        <file-fire-drop
+          app-name="demo"
+          path="/u/test.png"
+          src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+          src-file
+          over-write
+          max-dimension="200"
+          resize-height="16"
+          resize-width="16"
+          max-scale="3"
+          progress="{{progress2}}"
+          placeholder="{{base642}}"
+          images="{{images2}}"
+        >
+        </file-fire-drop>
+    </div>
+<hr>
+
 
         </template>
         </dom-module>

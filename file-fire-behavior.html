@@ -73,7 +73,7 @@ FileFireBehavior = {
       */
     maxDimension: {
         type: Number,
-        value: 0
+        value: 300
     },
     /**
       * `maxSize` represents the maximum size of a file to allow
@@ -121,59 +121,76 @@ FileFireBehavior = {
     * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
     */
   _loadImage: function(event){
-    var type;
     if(this.srcUrl != null){
       fetch(this.srcUrl).then(function(response){
-        return response.blob()
-      }).then(function(b){
-        console.log(b);
-        type = b.type;
-      });
+        return response.blob();
+      }).then(function(blob){
+        type = blob.type;
+        file = blob;
+          if(type.startsWith("image")){
+            this._imageUpload(file);
+          } else{
+            this._fileUpload(file);
+          }
+      }.bind(this));
     }else {
+      file = event.target.files[0];
       type = event.target.files[0].type;
-    }
-    if(type.startsWith("image")){
-      if(this.resizeWidth == null || this.resizeHeight == null){
-        var file = event.target.files[0];
-        this._uploadThis(file, this.path).then(function(){
-          this.fire("upload", {
-            "placeholder": this.placeholder,
-            "urls": this.downloadUrl
-          });
-        }.bind(this));
-      }else{
-        img = new Image();
-        if(typeof event == "string"){
-          img.crossOrigin = "Anonymous";
-          img.src = event; 
-        } else {
-          img.src = URL.createObjectURL(event.target.files[0]);
-        }    
-        img.onload = function(){
-          var canvas = document.createElement('canvas');
-          var context = canvas.getContext('2d');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          context.drawImage(img, 0, 0, img.width, img.height);                
-          var x = this._resize(canvas, img.width, img.height);
-          x.then(function(){
-            this.fire("upload", {
-              "placeholder": this.placeholder,
-              "url": this.downloadUrl
-            });
-          }.bind(this));
-        }.bind(this)
+        if(type.startsWith("image")){
+          this._imageUpload(file);
+        } else{
+          this._fileUpload(file);
+        }
       }
+  },
+
+  /**
+   * Uploads image files
+   */
+_imageUpload: function(file){
+    // If we DO NOT need to resize the image do this....
+    if(this.resizeWidth == null || this.resizeHeight == null){
+        this._uploadThis(file, this.path).then(function(){
+        this.fire("upload", {
+          "placeholder": this.placeholder,
+          "urls": this.downloadUrl
+        });
+      }.bind(this));
     }else{
-      var file = event.target.files[0];
+      img = new Image();
+      img.src = file;
+            img.src = URL.createObjectURL(file);
+      img.onload = function(){
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        context.drawImage(img, 0, 0, img.width, img.height);                
+        var x = this._resize(canvas, img.width, img.height);
+        x.then(function(){
+          this.fire("upload", {
+            "placeholder": this.placeholder,
+            "url": this.downloadUrl
+          });
+        }.bind(this));
+      }.bind(this)
+    }
+  },
+
+  /**
+   * Uploads non image files
+   */
+  _fileUpload: function(file){
+    // Progress isnt working tested with a large mp3 file
+    console.log(file);
+    console.log(this.path);
       this._uploadThis(file, this.path).then(function(){
+        // we could have standard base 64 placeholders for non image files
           this.fire("upload", {
             "placeholder": this.placeholder,
             "urls": this.downloadUrl
           });
-        }.bind(this));
-    }
-
+    }.bind(this));
   },
 
   /**
@@ -306,7 +323,9 @@ FileFireBehavior = {
       }, function() {
         // Upload completed successfully, now we can get the download URL
         var downloadURL = uploadTask.snapshot.downloadURL;
-        this.downloadUrl.push(downloadURL);
+        console.log(downloadURL);
+        this.downloadUrl=this.downloadUrl+downloadURL;
+        //this.downloadUrl.push(downloadURL); // Not sure why this doesnt work
         resolve(downloadURL);
       }.bind(this));
     }.bind(this)); 

@@ -15,7 +15,6 @@
   </head>
   <body>
 <div>
-    <h3>Uploading a file to FireBase</h3>
         <dom-module id="demo">
         <template is="dom-bind" id="demo-template">
         <firebase-app
@@ -25,19 +24,35 @@
             storage-bucket="convoofire.appspot.com"
             >
         </firebase-app>
+        <h3>Select a file to upload with no resize</h3>
         <file-fire
           app-name="demo"
-          path="/my/path/to/file.jpg"
-          files="{{myFiles}}"
-          download-url="{{dl}}"
+          path="/path/file/name."
+          progress="{{progress}}"
+          download-url="{{downloadUrl}}"
+          placeholder="{{placeholder}}"
         ></file-fire>
-        
-        <template is="dom-repeat" items={{dl}}>
-          {{item}}
-          
-        </template>
-        
-        {{dl}}
+
+        <h3>Select a file to upload and resize</h3>
+        <file-fire
+          app-name="demo"
+          path="/path/file/name."
+          progress="{{progress}}"
+          download-url="{{downloadUrl}}"
+          max-scale="3"
+          resize-height="50"
+          resize-width="50"
+          placeholder="{{placeholder}}"
+        ></file-fire>
+
+
+
+
+        </br> </br> 
+        URL: {{downloadUrl}}</br> 
+        Progress: {{progress}}% </br>
+        Placeholder: {{placeholder}} </br>
+
 
         <script>
           document.querySelector('file-fire').addEventListener('upload', function (e) {
