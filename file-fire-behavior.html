@@ -182,8 +182,6 @@ _imageUpload: function(file){
    */
   _fileUpload: function(file){
     // Progress isnt working tested with a large mp3 file
-    console.log(file);
-    console.log(this.path);
       this._uploadThis(file, this.path).then(function(){
         // we could have standard base 64 placeholders for non image files
           this.fire("upload", {
@@ -286,7 +284,7 @@ _imageUpload: function(file){
   _uploadThis: function(file, storagePath){
     return new Promise(function(resolve, reject){
       // Get a reference to the storage service, which is used to create references in your storage bucket.
-      var storage = firebase.storage();
+      var storage = firebase.storage(firebase.app(this.appName));
       // Create a storage reference from our storage service.
       var storageRef = storage.ref();
       // Upload file and metadata to the object 'images/mountains.jpg'
@@ -323,7 +321,6 @@ _imageUpload: function(file){
       }, function() {
         // Upload completed successfully, now we can get the download URL
         var downloadURL = uploadTask.snapshot.downloadURL;
-        console.log(downloadURL);
         this.downloadUrl=this.downloadUrl+downloadURL;
         //this.downloadUrl.push(downloadURL); // Not sure why this doesnt work
         resolve(downloadURL);
