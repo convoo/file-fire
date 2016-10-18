@@ -121,8 +121,13 @@ FileFireBehavior = {
     * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
     */
   _loadImage: function(event){
+    var externalLink = this.srcUrl;
     if(this.srcUrl != null){
-      fetch(this.srcUrl).then(function(response){
+      var str = this.srcUrl.split("/");
+      if(str[2] == "pbs.twimg.com"){
+        externalLink = this.srcUrl.replace("normal", "400x400");
+      }
+      fetch(externalLink).then(function(response){
         return response.blob();
       }).then(function(blob){
         type = blob.type;
@@ -156,10 +161,10 @@ _imageUpload: function(file){
           "urls": this.downloadUrl
         });
       }.bind(this));
-    }else{
+    } else {
       img = new Image();
       img.src = file;
-            img.src = URL.createObjectURL(file);
+      img.src = URL.createObjectURL(file);
       img.onload = function(){
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
@@ -273,11 +278,15 @@ _imageUpload: function(file){
   _uploadMultiple: function (files, sizes) {
     var path = this.path;
     sizes = ['original'].concat(sizes)
-    sizes.push('_64')
+    sizes.push('placeholder')
     path = path.substring(0,path.lastIndexOf('.'))
-
     for (i = 0; i < files.length; i++) {
-      this._uploadThis(files[i], path + '_' +sizes[i].toString());
+      if (typeof sizes[i] === 'number'){
+        this._uploadThis(files[i], path +'@'+sizes[i].toString()+'x');
+      } else {
+        this._uploadThis(files[i], path +sizes[i].toString());
+      }
+      
     }
   },
 
@@ -288,7 +297,7 @@ _imageUpload: function(file){
       // Create a storage reference from our storage service.
       var storageRef = storage.ref();
       // Upload file and metadata to the object 'images/mountains.jpg'
-      var uploadTask = storageRef.child(storagePath).put(file);
+      var uploadTask = storageRef.child(this.path +'/'+storagePath).put(file);
       // Listen for state changes, errors, and completion of the upload.
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
       function(snapshot) {
