@@ -18,6 +18,7 @@
         <dom-module id="demo">
         <template is="dom-bind" id="demo-template">
         <firebase-app
+            name="demo"
             api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
             auth-domain="convoofire.firebaseapp.com"
             database-url="https://convoofire.firebaseio.com"
@@ -27,37 +28,45 @@
         <h3>Select a file to upload with no resize</h3>
         <file-fire
           app-name="demo"
-          path="/path/file/name."
+          path="/local/file"
           progress="{{progress}}"
           download-url="{{downloadUrl}}"
           placeholder="{{placeholder}}"
         ></file-fire>
+
+        <br> <br> 
+        URL: {{downloadUrl}}<br> 
+        Progress: {{progress}}% <br>
+        Placeholder: {{placeholder}} <img src="{{placeholder}}" alt="Placeholder"> <br>
 
         <h3>Get remote file, upload and resize</h3>
         <file-fire
           app-name="demo"
-          path="/test/file/name."
+          path="/remote/file"
           src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
-          progress="{{progress}}"
-          download-url="{{downloadUrl}}"
+          progress="{{remoteProgress}}"
+          download-url="{{downloadRemoteUrl}}"
           max-scale="3"
           resize-height="50"
           resize-width="50"
-          placeholder="{{placeholder}}"
+          placeholder="{{remotePlaceholder}}"
         ></file-fire>
 
+        <br> <br> 
+        URL: {{downloadRemoteUrl}}<br> 
+        Progress: {{remoteProgress}}% <br>
+        Placeholder: {{remotePlaceholder}} <img src="{{remotePlaceholder}}" alt="Placeholder"> <br>
 
 
-
-        </br> </br> 
-        URL: {{downloadUrl}}</br> 
-        Progress: {{progress}}% </br>
-        Placeholder: {{placeholder}} </br>
 
 
         <script>
-          document.querySelector('file-fire').addEventListener('upload', function (e) {
-            console.log(e); // true
+        console.log("Weee")
+        console.log()
+          document.querySelectorAll('file-fire').forEach(function(el){
+            el.addEventListener('upload', function (e) {
+              console.log(e); // true
+            })
           })
         </script>
 

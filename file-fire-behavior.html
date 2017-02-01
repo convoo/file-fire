@@ -123,25 +123,30 @@ FileFireBehavior = {
     */
   _loadImage: function(event){
     var externalLink = this.srcUrl;
+    // If we're getting a remote file
     if(this.srcUrl != null){
       var str = this.srcUrl.split("/");
       if(str[2] == "pbs.twimg.com"){
         externalLink = this.srcUrl.replace("normal", "400x400");
       }
+      // Get remote image
       fetch(externalLink).then(function(response){
         return response.blob();
       }).then(function(blob){
+        // Create file from image
         type = blob.type;
         file = blob;
-          if(type.startsWith("image")){
-            this._imageUpload(file);
-          } else{
-            this._fileUpload(file);
-          }
+        // Detect file type and upload accordingly
+        if(type.startsWith("image")){
+          this._imageUpload(file);
+        } else{
+          this._fileUpload(file);
+        }
       }.bind(this));
     }else {
       file = event.target.files[0];
       type = event.target.files[0].type;
+      // console.log(type)
         if(type.startsWith("image")){
           this._imageUpload(file);
         } else{
@@ -156,7 +161,8 @@ FileFireBehavior = {
 _imageUpload: function(file){
     // If we DO NOT need to resize the image do this....
     if(this.resizeWidth == null || this.resizeHeight == null){
-        this._uploadThis(file, this.path).then(function(){
+      // console.log("Not resizing")
+        this._uploadThis(file, this.path.substring(this.path.lastIndexOf('/')+1)).then(function(){
         this.fire("upload", {
           "placeholder": this.placeholder,
           "urls": this.downloadUrl
@@ -176,7 +182,7 @@ _imageUpload: function(file){
         x.then(function(){
           this.fire("upload", {
             "placeholder": this.placeholder,
-            "url": this.downloadUrl
+            "urls": this.downloadUrl
           });
         }.bind(this));
       }.bind(this)
@@ -188,7 +194,7 @@ _imageUpload: function(file){
    */
   _fileUpload: function(file){
     // Progress isnt working tested with a large mp3 file
-      this._uploadThis(file, this.path).then(function(){
+      this._uploadThis(file, this.path.substring(this.path.lastIndexOf('/')+1)).then(function(){
         // we could have standard base 64 placeholders for non image files
           this.fire("upload", {
             "placeholder": this.placeholder,
@@ -277,15 +283,15 @@ _imageUpload: function(file){
   }, // End resize blob
 
   _uploadMultiple: function (files, sizes) {
-    var path = this.path;
+    var name = this.path;
     sizes = ['original'].concat(sizes)
     sizes.push('placeholder')
-    path = path.substring(0,path.lastIndexOf('.'))
+    name = name.substring(name.lastIndexOf('/')+1)
     for (i = 0; i < files.length; i++) {
       if (typeof sizes[i] === 'number'){
-        this._uploadThis(files[i], path +'@'+sizes[i].toString()+'x');
+        this._uploadThis(files[i], name +'@'+sizes[i].toString()+'x');
       } else {
-        this._uploadThis(files[i], path +sizes[i].toString());
+        this._uploadThis(files[i], name +"-"+sizes[i].toString());
       }
       
     }
@@ -298,7 +304,7 @@ _imageUpload: function(file){
       // Create a storage reference from our storage service.
       var storageRef = storage.ref();
       // Upload file and metadata to the object 'images/mountains.jpg'
-      var uploadTask = storageRef.child(this.path +'/'+storagePath).put(file);
+      var uploadTask = storageRef.child(this.path.substring(0,this.path.lastIndexOf('/')) +'/'+storagePath).put(file);
       // Listen for state changes, errors, and completion of the upload.
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
       function(snapshot) {
