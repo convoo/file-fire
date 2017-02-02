@@ -337,8 +337,7 @@ _imageUpload: function(file){
       }, function() {
         // Upload completed successfully, now we can get the download URL
         var downloadURL = uploadTask.snapshot.downloadURL;
-        this.downloadUrl.push(downloadURL); 
-        //console.log(this.downloadUrl);
+        this.push('downloadUrl', downloadURL);
         resolve(downloadURL);
       }.bind(this));
     }.bind(this)); 

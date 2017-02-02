@@ -35,6 +35,7 @@
         ></file-fire>
 
         <br> <br> 
+
         URL: {{downloadUrl}}<br> 
         Progress: {{progress}}% <br>
         Placeholder: {{placeholder}} <img src="{{placeholder}}" alt="Placeholder"> <br>
@@ -52,8 +53,12 @@
           placeholder="{{remotePlaceholder}}"
         ></file-fire>
 
+        </br></br>URl's: </br>
+        <template is="dom-repeat" items="{{downloadRemoteUrl}}">
+          <img src="{{item}}">
+        </template>
         <br> <br> 
-        URL: {{downloadRemoteUrl}}<br> 
+        
         Progress: {{remoteProgress}}% <br>
         Placeholder: {{remotePlaceholder}} <img src="{{remotePlaceholder}}" alt="Placeholder"> <br>
 
