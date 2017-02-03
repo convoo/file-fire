@@ -13,10 +13,12 @@
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
   </head>
-  <body>
-<div>
-        <dom-module id="demo">
-        <template is="dom-bind" id="demo-template">
+
+<body>
+  <div>
+    <h3>Select a file to upload with no resize</h3>
+      <demo-snippet>
+        <template is="dom-bind">
         <firebase-app
             name="demo"
             api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
@@ -25,7 +27,6 @@
             storage-bucket="convoofire.appspot.com"
             >
         </firebase-app>
-        <h3>Select a file to upload with no resize</h3>
         <file-fire
           app-name="demo"
           path="/local/file"
@@ -44,7 +45,13 @@
         Progress: {{progress}}% <br>
         Placeholder: {{placeholder}} <img src="{{placeholder}}"> <br>
 
+        </template>
+      </demo-snippet>
+
+
         <h3>Get remote file, upload and resize</h3>
+        <demo-snippet>
+        <template is="dom-bind">
         <file-fire
           app-name="demo"
           path="/remote/file"
@@ -64,20 +71,15 @@
         <br> <br> 
         
         Progress: {{remoteProgress}}% <br>
-        Placeholder: {{remotePlaceholder}} <img src="{{remotePlaceholder}}"> <br>
+        Placeholder: <img src="{{remotePlaceholder}}"> <br>
 
 
 
 
-        <script>
-          document.querySelectorAll('file-fire').forEach(function(el){
-            el.addEventListener('upload', function (e) {
-            })
-          })
-        </script>
+
 
         </template>
-        </dom-module>
+      </demo-snippet>
     </div>
 
   </body>

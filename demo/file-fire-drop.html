@@ -15,9 +15,9 @@
   </head>
   <body>
 <div>
-    
-        <dom-module id="demo">
-        <template is="dom-bind" id="demo-template">
+       <h3>Drag Over and Drop a file to upload to FireBase</h3>
+      <demo-snippet>
+        <template is="dom-bind">
         <firebase-app
             name = "demo"
             api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
@@ -27,7 +27,7 @@
             >
         </firebase-app>
 
-        <h3>Drag Over and Drop a file to upload to FireBase</h3>
+     
         <div style="height:400px; width:400px; border: 1px solid black">
             <file-fire-drop
               app-name="demo"
@@ -44,10 +44,13 @@
         </div>
 
         </br>
-            <hr>
-        </br>
-<h3>Always shown drag and drop </h3>
+              </template>
+      </demo-snippet>
 
+   
+<h3>Always shown drag and drop </h3>
+      <demo-snippet>
+        <template is="dom-bind">
     <div style="height:300px; width:300px">
         <file-fire-drop
           app-name="demo"
@@ -67,7 +70,11 @@
         </file-fire-drop>
     </div>
 <hr>
+        </template>
+      </demo-snippet>
 
+      <demo-snippet>
+        <template is="dom-bind">
 <h3>Be invisible and fetch a remote file</h3>
 
     <div style="height:0px; width:0px">
@@ -91,7 +98,7 @@
 
 
         </template>
-        </dom-module>
+      </demo-snippet>
     </div>
 
   </body>

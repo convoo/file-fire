@@ -7,16 +7,17 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../file-fire-fetch.html">
     <link rel="import" href="../../polymerfire/firebase-app.html">
-    <link rel="import" href="../../paper-dialog/paper-dialog.html">
+    <link rel="import" href="../file-fire-fetch.html">
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
   </head>
-  <body>
-<div>
-        <dom-module id="demo">
-        <template is="dom-bind" id="demo-template">
+  
+<body>
+    <div>
+      <h3>Download a file from firebase storage path</h3>
+      <demo-snippet>
+        <template is="dom-bind">
         <firebase-app
             name="demo"
             api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
@@ -25,11 +26,10 @@
             storage-bucket="convoofire.appspot.com"
             >
         </firebase-app>
-        <h3>Download a file from firebase storage</h3>
+
         <file-fire-fetch
           app-name="demo"
           path="/remote/file@2x"
-          file="{{myFile}}"
           file-url="{{myFileURL}}">
         </file-fire-fetch>
 
@@ -41,6 +41,8 @@
         </template>
         </dom-module>
     </div>
+            </template>
+      </demo-snippet>
 
   </body>
 </html>

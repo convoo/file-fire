@@ -115,11 +115,7 @@
             reflectToAttribute: true
         }
     },
-    ready: function() {
-      console.log('Fire');
-        // var parent = Polymer.dom(this).parentNode;
-        // this._updateFile();
-    },
+
     _updateFile: function(){
       var storage = firebase.storage(firebase.app(this.appName));
       var storageRef = storage.ref();
