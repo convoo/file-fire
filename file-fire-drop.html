@@ -48,11 +48,11 @@
 
   
   <template is="dom-if" if={{onlyImages}}>
-    <input type="file" id="inputfile" accept="image/*" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
+    <input type="file" id="inputfile" accept="image/*" on-change="_instantLoad" on-drag-enter="_enter" on-drop="_drop">
   </template>
 
   <template is="dom-if" if={{!onlyImages}}>
-    <input type="file" id="inputfile" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
+    <input type="file" id="inputfile" on-change="_instantLoad" on-drag-enter="_enter" on-drop="_drop">
   </template>
 </div>
 <content></content>
@@ -106,9 +106,9 @@
           observer: "_checkShow"
         },
 
-        instantLoad:{
-          type: String,
-          observer: "_instantLoad"
+        instant:{
+          type: Boolean,
+          value: false,
         }
       },
     
@@ -118,10 +118,15 @@
         'dropZone.dragleave' : '_exit'
     },
 
-    _instantLoad: function(){
-      var imageUrl = "url("+this.instantLoad+")"
-      this.customStyle["--file-fire-dropzone-background-image"] = imageUrl;
-      this.updateStyles();
+    _instantLoad: function(event){
+      this._loadImage(event);
+        var reader = new FileReader();
+        reader.onload = function (data) {
+          var imageUrl = "url("+data.target.result+")"
+          this.customStyle["--file-fire-dropzone-background-image"] = imageUrl;
+          this.updateStyles();
+        }.bind(this);
+        reader.readAsDataURL(event.target.files[0]);
     },
 
     _checkShow: function(newShow, oldShow){
