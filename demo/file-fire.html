@@ -33,7 +33,10 @@
           progress="{{progress}}"
           download-url="{{downloadUrl}}"
           placeholder="{{placeholder}}"
-        ></file-fire>
+        >
+        <paper-button raised>Raised button</paper-button>
+        </file-fire>
+
 
         <br> <br> 
 
@@ -64,7 +67,6 @@
           placeholder="{{remotePlaceholder}}"
         ></file-fire>
 
-        </br></br>URl's: </br>
         <template is="dom-repeat" items="{{downloadRemoteUrl}}">
           <img src="{{item}}">
         </template>

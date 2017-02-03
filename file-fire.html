@@ -7,16 +7,19 @@
       :host {
         display: block;
       }
+
     </style>
-    
+
+<template is="dom-if" if="{{showInputs}}">  
     <template is="dom-if" if="{{onlyImages}}">
       <input type="file" id="filez" accept="image/*" on-change="_loadImage">  
     </template>
     <template is="dom-if" if="{{!onlyImages}}">
       <input type="file" id="filez" on-change="_loadImage">
     </template>
+</template>
     
-            
+ 
   </template>
 
   <script>
@@ -45,7 +48,19 @@
      */
     Polymer({
       is: 'file-fire',
-      behaviors: [FileFireBehavior]
+      behaviors: [FileFireBehavior],
+      properties: {
+        srcUrl:{
+          type: String,
+        }
+      },
+
+      ready: function(){
+          if (this.srcUrl){this.showInputs = false} else {this.showInputs = true}
+      },
+
+
+
     });
   </script>
 </dom-module>

@@ -17,10 +17,11 @@
               position:absolute;
               top:0px;
               left:0px;
-              background: var(--file-fire-dropzone-background,#e9f0fa);
+              background: var(--file-fire-dropzone-background, transparent);
+              cursor: pointer;
             }
 
-            #filez{
+            #inputfile{
               display:block;
               height: 100%;
               width: 100%;
@@ -29,32 +30,23 @@
               left:0px;
               opacity:0;
               z-index:200;
-              background:black;
+              cursor: pointer;
             }
-            #border{
-              color: var(--file-fire-color,#b1bfd4);
-              width:calc(100% - 46px);
-              height:calc(50% - 46px);
-              border: var(--file-fire-border,3px dashed #b1bfd4);
-              margin:20px;
-              padding-top:50%;
-              text-align: center;
-              size: 18px;
-            }
+
 
         </style>
 
 <div id ="dropZone">
-  <div id="border">
+
     <p>{{hoverText}}</p>
-  </div>
+
   
   <template is="dom-if" if={{onlyImages}}>
-    <input type="file" id="filez" accept="image/*" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
+    <input type="file" id="inputfile" accept="image/*" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
   </template>
 
   <template is="dom-if" if={{!onlyImages}}>
-    <input type="file" id="filez" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
+    <input type="file" id="inputfile" on-change="_loadImage" on-drag-enter="_enter" on-drop="_drop">
   </template>
 </div>
 <content></content>
@@ -97,7 +89,7 @@
         */
         hoverText: {
           type: String,
-          value: "Upload a file."
+          value: ""
         },
         /**
         * `alwaysShow` shows the drop file section by default. This means content inside the element will not be shown.
@@ -147,7 +139,6 @@
       if(!this.alwaysShow){
         this.customStyle["--file-fire-display"] = "none";
         this.updateStyles();
-        console.log('exit');
       }
     },
 
@@ -155,7 +146,6 @@
         if(!this.alwaysShow){
         this.customStyle["--file-fire-display"] = "none";
         this.updateStyles();
-        console.log('drop');
       }
     }
 
