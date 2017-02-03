@@ -36,9 +36,13 @@
 
         <br> <br> 
 
-        URL: {{downloadUrl}}<br> 
+        </br></br>URl's: </br>
+        <template is="dom-repeat" items="{{downloadUrl}}">
+          <img src="{{item}}">
+        </template>
+        <br> <br> 
         Progress: {{progress}}% <br>
-        Placeholder: {{placeholder}} <img src="{{placeholder}}" alt="Placeholder"> <br>
+        Placeholder: {{placeholder}} <img src="{{placeholder}}"> <br>
 
         <h3>Get remote file, upload and resize</h3>
         <file-fire
@@ -60,17 +64,14 @@
         <br> <br> 
         
         Progress: {{remoteProgress}}% <br>
-        Placeholder: {{remotePlaceholder}} <img src="{{remotePlaceholder}}" alt="Placeholder"> <br>
+        Placeholder: {{remotePlaceholder}} <img src="{{remotePlaceholder}}"> <br>
 
 
 
 
         <script>
-        console.log("Weee")
-        console.log()
           document.querySelectorAll('file-fire').forEach(function(el){
             el.addEventListener('upload', function (e) {
-              console.log(e); // true
             })
           })
         </script>

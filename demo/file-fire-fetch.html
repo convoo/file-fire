@@ -15,7 +15,6 @@
   </head>
   <body>
 <div>
-    <h3>Fetching a file from FireBase</h3>
         <dom-module id="demo">
         <template is="dom-bind" id="demo-template">
         <firebase-app
@@ -26,13 +25,19 @@
             storage-bucket="convoofire.appspot.com"
             >
         </firebase-app>
+        <h3>Download a file from firebase storage</h3>
         <file-fire-fetch
           app-name="demo"
-          path="/my/path/to/file.jpg"
+          path="/remote/file@2x"
           file="{{myFile}}"
-          file-url="{{myFileURL}}"
-        ></file-fire-fetch>
+          file-url="{{myFileURL}}">
+        </file-fire-fetch>
 
+        <br> <br> 
+
+        <img src="{{myFileURL}}">
+
+        URL: {{myFileURL}}
         </template>
         </dom-module>
     </div>
