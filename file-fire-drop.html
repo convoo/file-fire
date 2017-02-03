@@ -35,6 +35,9 @@
               z-index:200;
               cursor: pointer;
             }
+            input[type='file'] {
+              opacity:0    
+            }
 
 
         </style>
@@ -101,6 +104,11 @@
           type: Boolean,
           value: false,
           observer: "_checkShow"
+        },
+
+        instantLoad:{
+          type: String,
+          observer: "_instantLoad"
         }
       },
     
@@ -108,6 +116,12 @@
         'dragenter' : '_enter',
         'dropZone.dragenter' : '_enter',
         'dropZone.dragleave' : '_exit'
+    },
+
+    _instantLoad: function(){
+      var imageUrl = "url("+this.instantLoad+")"
+      this.customStyle["--file-fire-dropzone-background-image"] = imageUrl;
+      this.updateStyles();
     },
 
     _checkShow: function(newShow, oldShow){

@@ -99,6 +99,13 @@ FileFireBehavior = {
         reflectToAttribute: true,
         notify: true,
     },
+        /**
+      * `instant` is the useable image beofre upload
+      */
+    instant: {
+        type: Boolean,
+        value: false,
+    },
     /**
       * `files` is an array of images that have been resized based on the desired inputs
       */
@@ -177,7 +184,10 @@ _imageUpload: function(file){
         var context = canvas.getContext('2d');
         canvas.width = img.width;
         canvas.height = img.height;
-        context.drawImage(img, 0, 0, img.width, img.height);                
+        context.drawImage(img, 0, 0, img.width, img.height);
+        if (this.instant){
+          this.instantLoad = canvas.toDataURL();
+        }
         var x = this._resize(canvas, img.width, img.height);
         x.then(function(){
           this.fire("upload", {

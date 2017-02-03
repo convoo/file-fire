@@ -83,12 +83,45 @@
 
         <style is="custom-style">
           file-fire-drop.click { 
-            --file-fire-dropzone-background: #54a6e3;
             --file-fire-dropzone-background-image: url("http://i.imgur.com/ndcWzqn.png");
             height: 100px;
             width: 100px;
-            border: 1px solid #54a6e3;
             border-radius: 4px;
+          }
+          
+        </style>
+
+      </template>
+    </demo-snippet>
+
+
+    <h3>Drag & Drop or Click with Instant Preveiw</h3>
+    <demo-snippet>
+      <template is="dom-bind">
+        <file-fire-drop
+          app-name="demo"
+          path="/dropdemo/click"
+          src-file
+          over-write
+          max-dimension="200"
+          resize-height="16"
+          resize-width="16"
+          max-scale="3"
+          progress="{{progress}}"
+          placeholder="{{base64}}"
+          images="{{images}}"
+          always-show
+          instant
+          class="instant"
+        >
+        </file-fire-drop>
+
+        <style is="custom-style">
+          file-fire-drop.instant { 
+            height: 100px;
+            width: 100px;
+            border-radius: 4px;
+            --file-fire-dropzone-background-image: url("http://i.imgur.com/ndcWzqn.png");   
           }
           
         </style>
