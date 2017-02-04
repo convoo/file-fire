@@ -122,6 +122,7 @@ FileFireBehavior = {
     * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
     */
   _loadImage: function(event){
+    this.downloadUrl = [];
     var externalLink = this.srcUrl;
     // If we're getting a remote file
     if(this.srcUrl != null){
@@ -131,7 +132,11 @@ FileFireBehavior = {
       }
       // Get remote image
       fetch(externalLink).then(function(response){
-        return response.blob();
+        if (response.ok){
+          return response.blob();
+        }else {
+          throw Error(response.statusText);
+        }
       }).then(function(blob){
         // Create file from image
         type = blob.type;
@@ -142,6 +147,11 @@ FileFireBehavior = {
         } else{
           this._fileUpload(file);
         }
+      }.bind(this))
+      .catch(function(err){
+        this.fire("no-remote", {
+          message: "No file found at srcUrl"
+        })
       }.bind(this));
     }else {
       file = event.target.files[0];
@@ -256,8 +266,9 @@ _imageUpload: function(file){
       sizes.push(currentSize-this.scaleStep);
       currentSize = currentSize - this.scaleStep;
     }
+    sizes.push(0)
 
-    for (i = 0; i < sizes.length; i++) { 
+    for (i = 0; i < sizes.length-1; i++) { 
       canvas = this._loopToTargetSize(canvas, sizes[i]*this.resizeWidth, sizes[i]* this.resizeHeight);
       canvases.push(canvas);
     }
@@ -284,14 +295,18 @@ _imageUpload: function(file){
 
   _uploadMultiple: function (files, sizes) {
     var name = this.path;
-    sizes = ['original'].concat(sizes)
-    sizes.push('placeholder')
+    sizes = [''].concat(sizes)
     name = name.substring(name.lastIndexOf('/')+1)
     for (i = 0; i < files.length; i++) {
       if (typeof sizes[i] === 'number'){
-        this._uploadThis(files[i], name +'@'+sizes[i].toString()+'x');
+        this._uploadThis(files[i], name +'@'+(sizes[i]+1).toString()+'x');
       } else {
-        this._uploadThis(files[i], name +"-"+sizes[i].toString());
+        if(sizes[i] == ""){
+          this._uploadThis(files[i], name + sizes[i].toString());
+        }else {
+          this._uploadThis(files[i], name +"-"+sizes[i].toString());
+        }
+        
       }
       
     }
@@ -337,7 +352,10 @@ _imageUpload: function(file){
       }, function() {
         // Upload completed successfully, now we can get the download URL
         var downloadURL = uploadTask.snapshot.downloadURL;
-        this.push('downloadUrl', downloadURL);
+        this.push('downloadUrl', {
+          name: storagePath,
+          url: downloadURL
+        });
         resolve(downloadURL);
       }.bind(this));
     }.bind(this)); 
