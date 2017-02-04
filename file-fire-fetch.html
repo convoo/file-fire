@@ -1,65 +1,10 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="file-fire-behavior.html">
+<link rel="import" href="../polymerfire/firebase.html">
 
 <dom-module id="file-fire-fetch">
-    <template>
-        <style>
-            :host {
-              display: block;
-              height: 100%;
-              width: 100%;
-              position:relative;
-            }
-            #dropZone {
-              display:none;
-              display:var(--file-display);
-              height: 100%;
-              width: 100%;
-              position:absolute;
-              top:0px;
-              left:0px;
-              background: #e9f0fa;
-            }
-
-            #filez{
-              display:block;
-              height: 100%;
-              width: 100%;
-              position: absolute;
-              top:0px;
-              left:0px;
-              opacity:0;
-              z-index:200;
-              background:black;
-            }
-            #border{
-              color: #b1bfd4;
-              width:calc(100% - 46px);
-              height:calc(50% - 46px);
-              border: 3px dashed #b1bfd4;
-              margin:20px;
-              padding-top:50%;
-              text-align: center;
-              size: 18px;
-            }
-
-        </style>
-
-<div id ="dropZone">
-  <div id="border">
-    <b>Upload an Image</b></br>
-    <p>jpg, png, gif</p>
-  </div>
-  <input type="file" id="filez" multiple accept="image/*">
-</div>
-<content></content>
-
-        
-    </template>
-
   <script>
     /**
-     * An element that allows simple download of an image from Firebase storage
+     * An element that provides the url to a file based on the FireBase storage path
      * Example:
      * ```
      * <firebase-app
@@ -73,7 +18,6 @@
      *  <file-fire-fetch
      *    app-name="demo"
      *    path="/my/path/to/file.jpg"
-     *    file="{{myFile}}"
      *    file-url="{{myFileURL}}"   
      *   ></file-fire-fetch>
      * ```
@@ -83,7 +27,6 @@
      */
     Polymer({
         is: 'file-fire-fetch',
-        behaviors: [FileFireBehavior],
         properties: {
         /**
          * `appName` represents the name of the firebase-app that was instantiated
@@ -99,37 +42,35 @@
             observer: "_updateFile"
         },
         /**
-         * `file` represents the downloaded file
-         */
-        file: {
-            type: Object,
-            notify: true,
-            reflectToAttribute: true
-        },
-        /**
          * `fileUrl` represents the file's direct url'
          */
         fileUrl: {
             type: String,
             notify: true,
             reflectToAttribute: true
+        },
+        fileExists: {
+            type: Boolean,
+            value: false,
+            notify: true
         }
     },
 
-    _updateFile: function(){
-      var storage = firebase.storage(firebase.app(this.appName));
-      var storageRef = storage.ref();
-      storageRef.child(this.path).getDownloadURL().then(function(url) {
-          this.fileUrl = url;
-          // fetch(url).then(function(response){
-          //   this.file = response.blob;
-          // }.bind(this));
-      }.bind(this))
-      .catch(function(error) {
-          console.log(error);
-      });
+    _updateFile: function(newVal){
+      if(newVal){
+          var storage = firebase.storage(firebase.app(this.appName));
+          var storageRef = storage.ref();
+          storageRef.child(this.path).getDownloadURL().then(function(url) {
+              this.fileUrl = url;
+              this.fileExists = true;
+          }.bind(this))
+          .catch(function(error) {
+              this.fire("no-file", {message:"No file exists at this location", error: error});
+              this.fileExists = false;
+              // console.log(error);
+          }.bind(this));
+      }
     }
-
 
     });
   </script>

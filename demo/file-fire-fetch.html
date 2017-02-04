@@ -8,6 +8,7 @@
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
     <link rel="import" href="../../polymerfire/firebase-app.html">
+    <link rel="import" href="../../paper-input/paper-input.html">
     <link rel="import" href="../file-fire-fetch.html">
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
@@ -29,15 +30,24 @@
 
         <file-fire-fetch
           app-name="demo"
-          path="/remote/file@2x"
+          path="{{path}}"
+          file-exists="{{fileExists}}"
           file-url="{{myFileURL}}">
         </file-fire-fetch>
 
-        <br> <br> 
+        <paper-input id="path" value="{{path}}"></paper-input>
 
-        <img src="{{myFileURL}}">
+        <template is="dom-if" if="[[fileExists]]">
+          URL: {{myFileURL}}<br>
+          <img src="{{myFileURL}}"><br>
+        </template>
 
-        URL: {{myFileURL}}
+        <script>
+            document.querySelector("#path").setAttribute("value", "/remote/file@2x")
+        </script>
+        
+
+        
         </template>
         </dom-module>
     </div>
