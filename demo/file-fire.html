@@ -9,7 +9,6 @@
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
     <link rel="import" href="../file-fire.html">
     <link rel="import" href="../../polymerfire/firebase-app.html">
-    <link rel="import" href="../../paper-dialog/paper-dialog.html">
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
   </head>
@@ -28,25 +27,28 @@
             >
         </firebase-app>
         <file-fire
+          id="local"
           app-name="demo"
           path="/local/file"
           progress="{{progress}}"
           download-url="{{downloadUrl}}"
           placeholder="{{placeholder}}"
         >
-        <paper-button raised>Raised button</paper-button>
         </file-fire>
-
-
-        <br> <br> 
-
+        <br><br> 
+        Progress: {{progress}}% <br>
         </br></br>URl's: </br>
         <template is="dom-repeat" items="{{downloadUrl}}">
-          <img src="{{item}}">
+          [[item.url]]
         </template>
         <br> <br> 
-        Progress: {{progress}}% <br>
-        Placeholder: {{placeholder}} <img src="{{placeholder}}"> <br>
+        
+
+        <script>
+            document.querySelector("#local").addEventListener("upload", function(e){
+              console.log(e);
+            })
+        </script>
 
         </template>
       </demo-snippet>
@@ -56,6 +58,7 @@
         <demo-snippet>
         <template is="dom-bind">
         <file-fire
+          id="remote"
           app-name="demo"
           path="/remote/file"
           src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
@@ -67,19 +70,22 @@
           placeholder="{{remotePlaceholder}}"
         ></file-fire>
 
-        <template is="dom-repeat" items="{{downloadRemoteUrl}}">
-          <img src="{{item}}">
-        </template>
-        <br> <br> 
-        
         Progress: {{remoteProgress}}% <br>
-        Placeholder: <img src="{{remotePlaceholder}}"> <br>
+        <template is="dom-repeat" items="{{downloadRemoteUrl}}">
+          [[item.name]]:<img src="{{item.url}}"><br>
+        </template>
+        Placeholder: <img src="{{remotePlaceholder}}"><br>
+        Placholder string: [[remotePlaceholder]]
 
-
-
-
-
-
+        <script>
+            document.querySelector("#remote").addEventListener("upload", function(e){
+              console.log(e);
+            })
+            document.querySelector("#remote").addEventListener("no-remote", function(e){
+              console.log(e);
+            })
+        </script>
+        
         </template>
       </demo-snippet>
     </div>
