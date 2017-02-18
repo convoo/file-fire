@@ -119,7 +119,7 @@
     },
 
     _instantLoad: function(event){
-      this._loadImage(event);
+      this.start(event);
       if(this.instant){
         var reader = new FileReader();
         reader.onload = function (data) {

@@ -20,7 +20,7 @@ FileFireBehavior = {
       */
     srcUrl: {
         type: String,
-        observer: "_loadImage",
+        observer: "_start",
     },
     /**
       * `srcFile` represents the file blob stored in a variable
@@ -115,199 +115,265 @@ FileFireBehavior = {
       reflectToAttribute: true,
       notify: true,
       value: []
+    },
+
+    debug: {
+      type: Boolean,
+      value: false
     }
   },
 
+  _start: function(){
+    this.debug && console.debug("Starting");
+    this.downloadUrl = []; // reset array
+    this._getFile() // returns a blob
+      .then(this._resizeIfImage.bind(this)) // returns array of blobs
+      .then(this._getPlaceholderIfImage.bind(this)) // returns object with array of blobs and string placeholder
+      .then(this._upload.bind(this)) // returns object with placeholder and array of download urls
+      .then(this._fireUploadEvent.bind(this))
+      .catch(console.log);
+  },
+
   /**
-    * Loads the image, adds it to a canvas then calls _resize with the canvas once it's ready
+    * Returns a promise with the file as a blob whether remote or local
     */
-  _loadImage: function(event){
-    this.downloadUrl = [];
-    var externalLink = this.srcUrl;
+  _getFile: function(){
+    this.debug && console.debug("Getting file");
     // If we're getting a remote file
     if(this.srcUrl != null){
+      this.debug && console.debug("File is remote");
+      var externalLink = this.srcUrl;
+      // Get larger size for twitter image
       var str = this.srcUrl.split("/");
       if(str[2] == "pbs.twimg.com"){
         externalLink = this.srcUrl.replace("normal", "400x400");
       }
+
       // Get remote image
-      fetch(externalLink).then(function(response){
+      return fetch(externalLink).then(function(response){
         if (response.ok){
           return response.blob();
         }else {
           throw Error(response.statusText);
         }
-      }).then(function(blob){
-        // Create file from image
-        type = blob.type;
-        file = blob;
-        // Detect file type and upload accordingly
-        if(type.startsWith("image")){
-          this._imageUpload(file);
-        } else{
-          this._fileUpload(file);
-        }
-      }.bind(this))
+      })
       .catch(function(err){
         this.fire("no-remote", {
           message: "No file found at srcUrl"
         })
       }.bind(this));
     }else {
-      file = event.target.files[0];
-      type = event.target.files[0].type;
-      // console.log(type)
-        if(type.startsWith("image")){
-          this._imageUpload(file);
-        } else{
-          this._fileUpload(file);
-        }
-      }
+      this.debug && console.debug("File is local");
+      return new Promise(function(resolve, reject){
+        resolve(event.target.files[0]);
+      })
+    }
   },
 
   /**
-   * Uploads image files
-   */
-_imageUpload: function(file){
-    // If we DO NOT need to resize the image do this....
-    if(this.resizeWidth == null && this.resizeHeight == null){
-      // console.log("Not resizing")
-        return this._uploadThis(file, this.path.substring(this.path.lastIndexOf('/')+1)).then(function(){
-        this.fire("upload", {
-          "placeholder": this.placeholder,
-          "urls": this.downloadUrl
-        });
-      }.bind(this));
-    } else {
+    * Returns an array of file blobs. Only one item if not image or not resized
+    */
+  _resizeIfImage: function(blob){
+    this.debug && console.debug("Checking to resize");
+    if (blob.type.startsWith("image") && (this.resizeWidth != null || this.resizeHeight != null)){
+      this.debug && console.debug("Will resize");
+      var sizes = this._calculateSizes();
+
       img = new Image();
-      img.src = file;
-      img.src = URL.createObjectURL(file);
-      img.onload = function(){
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        context.drawImage(img, 0, 0, img.width, img.height);
-        var x = this._resize(canvas, img.width, img.height);
-        return x.then(function(){
-          this.fire("upload", {
-            "placeholder": this.placeholder,
-            "urls": this.downloadUrl
-          });
-        }.bind(this));
-      }.bind(this)
+      img.src = URL.createObjectURL(blob);
+      return new Promise(function(resolve, reject){
+        img.onload = function(){
+          resolve([img.width, img.height])
+        }
+      }).then(function(args){
+        [w,h] = args;
+        return this._calculateResize(w,h);
+      }.bind(this)).then(function(args){
+        [w,h] = args;
+        return this._resizeBlobToSizes([blob], sizes, w, h)
+      }.bind(this))
     }
+    this.debug && console.debug("Will not resize");
+    return [blob];
   },
 
   /**
-   * Uploads non image files
-   */
-  _fileUpload: function(file){
-    // Progress isnt working tested with a large mp3 file
-      this._uploadThis(file, this.path.substring(this.path.lastIndexOf('/')+1)).then(function(){
-        // we could have standard base 64 placeholders for non image files
-          this.fire("upload", {
-            "placeholder": this.placeholder,
-            "urls": this.downloadUrl
-          });
-    }.bind(this));
+    * Returns an array of file blobs. Only one item if not image. Image and placeholder if no resize. All resized images and a placeholder otherwise.
+    */
+  _getPlaceholderIfImage: function(blobs){
+    this.debug && console.debug("Checking to create placeholder");
+    if (blobs[0].type.startsWith("image")){
+      this.debug && console.debug("Creating placeholder");
+
+      blob = blobs[blobs.length-1];
+
+      return new Promise(function(resolve, reject){
+        img = new Image();
+        img.src = URL.createObjectURL(blob);
+        resolve(new Promise(function(res,rej){
+          img.onload = function(){
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.width = img.width
+            canvas.height = img.height
+            context.drawImage(img, 0, 0, img.width, img.height);
+            [w,h] = this._calculateResize(w,h);
+            res(this._resizeCanvasToSize(canvas, Math.max(0.1*w,8), Math.max(0.1* h,8), true));
+          }.bind(this)
+        }.bind(this)))
+      }.bind(this)).then(function(ph){
+        this.placeholder = ph;
+        return {
+          blobs: blobs,
+          placeholder: ph
+        }
+      }.bind(this));
+    }
+    this.debug && console.debug("No placeholder");
+    return {
+      blobs: blobs
+    };
   },
 
   /**
-   * Resizes the image and adds it to an array of images to return
-   */
-  _resize: function(canvas, startWidth, startHeight){
-    var targetWidth, targetHeight;
-    var currentWidth = startWidth;
-    var currentHeight = startHeight;
+    * Returns an array of objects with a string placeholder and an array of urls to download uploaded images
+    */
+  _upload: function(objs){
+    this.debug && console.debug("Beginning to upload");
+    this.debug && console.debug(objs)
+    return this._uploadNext(objs.blobs, this._calculateSizes(),[]).then(function(urls){
+        return {
+          urls: urls,
+          placeholder: objs.placeholder
+        }
+      })
+  },
 
-    var largestDimension = Math.max(startWidth, startHeight)
-    // If the image has a dimension larger than maxDimension
-    if (largestDimension > this.maxDimension){
-      // Get the desired Dimensions
-      // If the width is larger, calculate the height and use maxDimension for the width
-      if (largestDimension == startWidth){
-        targetWidth = this.maxDimension;
-        targetHeight = startHeight * this.maxDimension / startWidth;
-      } else { // Else, calculate the width and use maxDimension for the height
-        targetWidth = startWidth * this.maxDimension / startHeight;
-        targetHeight = this.maxDimension;
-      }
-      canvas = this._loopToTargetSize(canvas, targetWidth, targetHeight, startWidth, startHeight)
-    }
+  _fireUploadEvent: function(objs){
+    this.debug && console.debug("Firing upload event");
+    this.fire("upload", objs)
+    return ;
+  },
 
-    // Add the original image to the array of canvases
-    var originalImage = canvas;
-    canvases = [];
-    canvases.push(originalImage);
-
-    // If the user does not provide both resize width and height, set them based on aspect ratio. Otherwise, do not resize image
-    if(this.resizeWidth == null && this.resizeHeight != null){
-      this.resizeWidth = currentWidth * this.resizeHeight / currentHeight;
-    }else if(this.resizeWidth != null && this.resizeHeight == null){
-      this.resizeHeight = currentHeight * this.resizeWidth / currentWidth;
-    }else if(this.resizeWidth == null && this.resizeHeight == null){
-      this.resizeWidth = currentWidth;
-      this.resizeHeight = currentHeight;
-    }
-
-    // Resize the image to maxScale * resize-height and width
-    canvas = this._loopToTargetSize(canvas, this.maxScale*this.resizeWidth, this.maxScale* this.resizeHeight);
-    var currentImage = canvas.toBlob(function(blob) {
-        return(blob);
-    });
-    canvases.push(canvas);
-
+  _calculateSizes: function(){
     // Make all the scales using scaleStep and save each of those into an array
-    var sizes = [];
-    var range = this.maxScale - 1;
-    var currentSize = this.maxScale;
+    var sizes = [0];
+    var currentSize = this.maxScale+this.scaleStep;
     while (currentSize != 1){
       sizes.push(currentSize-this.scaleStep);
       currentSize = currentSize - this.scaleStep;
     }
-    sizes.push(0)
-    
-    for (i = 0; i < sizes.length-1; i++) { 
-      canvas = this._loopToTargetSize(canvas, sizes[i]*this.resizeWidth, sizes[i]* this.resizeHeight);
-      canvases.push(canvas);
+    return sizes;
+  },
+
+  _calculateResize: function(w,h){
+    if(this.resizeWidth == null && this.resizeHeight != null){
+      newWidth = w * this.resizeHeight / h;
+      newHeight = this.resizeHeight;
+    }else if(this.resizeWidth != null && this.resizeHeight == null){
+      newWidth = this.resizeWidth;
+      newHeight = h * this.resizeWidth / w;
+    }else if(this.resizeWidth == null && this.resizeHeight == null){
+      newWidth = w;
+      newHeight = h;
+    }else {
+      newWidth = this.resizeWidth;
+      newHeight = this.resizeHeight;
     }
-    sizes = [''].concat(sizes)
+    return [newWidth, newHeight];
+  },
 
-    // Get the 10% base64 placeholder and return it to placeholder
-    canvas = this._loopToTargetSize(canvas, Math.max(0.1*this.resizeWidth,8), Math.max(0.1* this.resizeHeight,8));
-    this.placeholder = canvas.toDataURL();
-
-    var promises = [];
-    for (i = 0; i < canvases.length; i++) { 
-      promises.push( new Promise(function(resolve, reject){
-        canvases[i].toBlob(function(blob){
-          resolve(blob);
-        })
-      }));
+  _resizeBlobToSizes: function(resized, sizes, width, height){
+    this.debug && console.debug("Resize Loop");
+    i = resized.length;
+    if (i == sizes.length){
+      this.debug && console.debug("Resize loop complete");
+      return resized;
+    } else {
+      return this._resizeBlob(resized[i-1], sizes[i], width, height).then(function(blob){
+        resized.push(blob);
+        return resized;
+      }).then(function(resized){
+        return this._resizeBlobToSizes(resized, sizes, width, height);
+      }.bind(this))
     }
-    
-    return Promise.all(promises).then(function(b){
-      this.files = b;
-      return this._uploadNext(b, sizes,0)
-    }.bind(this));
+  },
 
-  }, // End resize blob
+  _resizeBlob: function(blob, size, width, height){
+    this.debug && console.debug("Resizing blob");
+    return new Promise(function(resolve, reject){
+      if (size == 0){
+        resolve(blob)
+      }else {
+        newWidth = size * width;
+        newHeight = size * height;
+        img = new Image()
+        img.src = URL.createObjectURL(blob);
+        resolve(new Promise(function(res, rej){
+          img.onload = function(){
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.width = img.width
+            canvas.height = img.height
+            context.drawImage(img, 0, 0, img.width, img.height);
+            res(this._resizeCanvasToSize(canvas, newWidth, newHeight));
+          }.bind(this)
+        }.bind(this)))
+      }
+    }.bind(this))
+  },
 
-  _uploadNext: function(files, sizes, i){
-    if(i < sizes.length){
+  _resizeCanvasToSize: function(canvas, w, h, p){
+    this.debug && console.debug("Starting canvas resize");
+    return new Promise(function(resolve, reject){
+      targetSizeReached = false;
+      while (!targetSizeReached) {
+        if (canvas.height > 1.25 * h && canvas.width > 1.25* w){
+          canvas = this._resizeCanvas(canvas, canvas.width * 0.8, canvas.width * 0.8);
+        } else { // Else Resize to maxDimension and set targetSizeReached to true
+          canvas = this._resizeCanvas(canvas, w, h);
+          if (p){
+            this.debug && console.debug("Making placeholder");
+            resolve(canvas.toDataURL());
+          }
+          canvas.toBlob(function(blob){
+            resolve(blob)
+          })
+          targetSizeReached = true;
+        }
+      }
+    }.bind(this))
+  },
+
+  _resizeCanvas: function(canvas, width, height){
+    this.debug && console.debug("Resizing canvas");
+    var canvas2 = document.createElement('canvas');
+    var context2 = canvas2.getContext('2d');
+    canvas2.width = width;
+    canvas2.height = height;
+    context2.drawImage(canvas, 0, 0, width, height);
+    return canvas2;
+  },
+
+  _uploadNext: function(files, sizes, urls){
+    i = urls.length
+    if(i < files.length){
+      this.debug && console.debug("Uploading next");
       var name = this.path;
       name = name.substring(name.lastIndexOf('/')+1)
-      nextSize = sizes[i]
-      name = i != 0 ? name+"@"+ (nextSize+1).toString()+ 'x' : name;
-      return this._uploadThis(files[i], name).then(this._uploadNext(files,sizes, i+1))
+      name = i != 0 ? name+"@"+ (sizes[i]).toString()+ 'x' : name;
+      return this._uploadThis(files[i], name).then(function(obj){
+        return this._uploadNext(files,sizes, urls.concat([obj]));
+      }.bind(this))
     }
+    this.debug && console.debug("Uploading complete");
     return new Promise(function(resolve, reject){
-      resolve(0);
+      resolve(urls);
     })
   },
 
   _uploadThis: function(file, storagePath){
+    this.debug && console.debug("Uploading an item");
     return new Promise(function(resolve, reject){
       // Get a reference to the storage service, which is used to create references in your storage bucket.
       var storage = firebase.storage(firebase.app(this.appName));
@@ -351,36 +417,12 @@ _imageUpload: function(file){
           name: storagePath,
           url: downloadURL
         });
-        resolve(downloadURL);
+        resolve({
+          name: storagePath,
+          url: downloadURL
+        });
       }.bind(this));
     }.bind(this)); 
-  },
-
-
-  _resizeCanvas: function(canvas, width, height){
-    var canvas2 = document.createElement('canvas');
-    var context2 = canvas2.getContext('2d');
-    canvas2.width = width;
-    canvas2.height = height;
-    context2.drawImage(canvas, 0, 0, width, height);
-    return canvas2;
-  },
-
-  _loopToTargetSize: function(canvas, targetWidth, targetHeight, currentWidth, currentHeight){
-    var targetSizeReached = false
-    // Reduce the image size to fit the maxDimension
-    while (!targetSizeReached){
-      // If currentHeight is more than double the targetHeight and the currentWidth is more than double the targetWidth, halve the image
-      if (currentHeight > 1.25 * targetHeight && currentWidth > 1.25* targetWidth){
-        currentWidth = 0.8 * currentWidth;
-        currentHeight = 0.8 * currentHeight;
-        canvas = this._resizeCanvas(canvas, currentWidth, currentHeight);
-      } else { // Else Resize to maxDimension and set targetSizeReached to true
-        canvas = this._resizeCanvas(canvas, targetWidth, targetHeight);
-        targetSizeReached = true;
-      }
-    }
-    return canvas;
   }
 };
 </script>
