@@ -1,7 +1,7 @@
 # file-fire
 
 <p align="center">
-  <img alt="file-fire" src="FileFire400.png" width="300">
+  <img alt="file-fire" src="File-Fire.png" width="200">
 </p>
 
 <p align="center">
@@ -11,6 +11,8 @@ Simple way to upload and download files from Firebase Storage.
 <p align="center">
   <a href="https://webcomponents.org/element/convoo/file-fire"><img src="https://img.shields.io/badge/webcomponents.org-published-blue.svg"></a>
   <a href="https://gitter.im/convoo/general"><img src="https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg"></a>
+  <a href="http://waffle.io/convoo/roadmap"><img src="https://badge.waffle.io/convoo/file-fire.svg?label=In%20Progress&title=In%20Progress"></a>
+
 </p>
 
 ---
