@@ -38,8 +38,8 @@
         <paper-input id="path" value="{{path}}"></paper-input>
 
         <template is="dom-if" if="[[fileExists]]">
-          URL: {{myFileURL}}<br>
-          <img src="{{myFileURL}}"><br>
+          URL: [[myFileURL]]<br>
+          <img src="[[myFileURL]]"><br>
         </template>
 
         <script>
