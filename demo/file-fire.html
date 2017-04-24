@@ -37,7 +37,7 @@
         >
         </file-fire>
         <br><br> 
-        Progress: {{progress}}% <br>
+        Progress: [[progress]]% <br>
         </br></br>URl's: </br>
         <template is="dom-repeat" items="{{downloadUrl}}">
           [[item.url]]
@@ -72,7 +72,7 @@
           debug
         ></file-fire>
 
-        Progress: {{remoteProgress}}% <br>
+        Progress: [[remoteProgress]]% <br>
         <template is="dom-repeat" items="{{downloadRemoteUrl}}">
           [[item.name]]:<img src="{{item.url}}"><br>
         </template>
