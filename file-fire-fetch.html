@@ -1,77 +1,95 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../polymerfire/firebase.html">
-
+<link rel="import" href="file-fire-cache-behavior.html">
 <dom-module id="file-fire-fetch">
   <script>
-    /**
-     * An element that provides the url to a file based on the FireBase storage path
-     * Example:
-     * ```
-     * <firebase-app
-     *   name="demo"
-     *   api-key="API_KEY"
-     *   auth-domain="AUTH_DOMAIN"
-     *   database-url="DATABASE_URL"
-     *   storage-bucket="convoofire.appspot.com">
-     * </firebase-app>
-     * <!-- A file-fire-fetch element allowing image upload to firebase storage -->
-     *  <file-fire-fetch
-     *    app-name="demo"
-     *    path="/my/path/to/file.jpg"
-     *    file-url="{{myFileURL}}"   
-     *   ></file-fire-fetch>
-     * ```
-     *
-     *
-     * @demo demo/file-fire-fetch.html
-     */
-    Polymer({
-        is: 'file-fire-fetch',
-        properties: {
-        /**
-         * `appName` represents the name of the firebase-app that was instantiated
-         */
-        appName: {
-            type: String,
-        },
-        /**
-         * `path` represents where the file should be saved, if the path doesnt exist it will be created
-         */
-        path: {
-            type: String,
-            observer: "_updateFile"
-        },
-        /**
-         * `fileUrl` represents the file's direct url'
-         */
-        fileUrl: {
-            type: String,
-            notify: true,
-            reflectToAttribute: true
-        },
-        fileExists: {
-            type: Boolean,
-            value: false,
-            notify: true
-        }
+  /**
+   * An element that provides the url to a file based on the FireBase storage path
+   * Example:
+   * ```
+   * <firebase-app
+   *   name="demo"
+   *   api-key="API_KEY"
+   *   auth-domain="AUTH_DOMAIN"
+   *   database-url="DATABASE_URL"
+   *   storage-bucket="convoofire.appspot.com">
+   * </firebase-app>
+   * <!-- A file-fire-fetch element allowing image upload to firebase storage -->
+   *  <file-fire-fetch
+   *    app-name="demo"
+   *    path="/my/path/to/file.jpg"
+   *    file-url="{{myFileURL}}"   
+   *   ></file-fire-fetch>
+   * ```
+   *
+   *
+   * @demo demo/file-fire-fetch.html
+   */
+  Polymer({
+    is: 'file-fire-fetch',
+
+    behaviors: [
+      myBehaviors.FileFireCache
+    ],
+
+    properties: {
+      /**
+       * `appName` represents the name of the firebase-app that was instantiated
+       */
+      appName: {
+        type: String,
+      },
+
+      /**
+       * `path` represents where the file should be saved, if the path doesnt exist it will be created
+       */
+      path: {
+        type: String,
+        observer: "_updateFile"
+      },
+
+      /**
+       * `fileUrl` represents the file's direct url'
+       */
+      fileUrl: {
+        type: String,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      fileExists: {
+        type: Boolean,
+        value: false,
+        notify: true
+      }
     },
 
-    _updateFile: function(newVal){
-      if(newVal){
-          var storage = firebase.storage(firebase.app(this.appName));
-          var storageRef = storage.ref();
-          storageRef.child(this.path).getDownloadURL().then(function(url) {
-              this.fileUrl = url;
-              this.fileExists = true;
+    _updateFile: function(path) {
+      if (path && this.__pathReady(path)) {
+        var cached = this.getCache(path);
+        if(cached) {
+            this.fileUrl = cached;
+            this.fileExists = true;
+            return;
+        }
+        var storage = firebase.storage(firebase.app(this.appName));
+        var storageRef = storage.ref();
+        storageRef.child(path).getDownloadURL().then(function(url) {
+            this.fileUrl = url;
+            this.fileExists = true;
+            this.setCache(path, url);
           }.bind(this))
           .catch(function(error) {
-              this.fire("no-file", {message:"No file exists at this location", error: error});
-              this.fileExists = false;
-              // console.log(error);
+            this.fire("no-file", {
+              message: "No file exists at this location",
+              error: error
+            });
+            this.fileExists = false;
+            // console.log(error);
           }.bind(this));
       }
     }
 
-    });
+  });
   </script>
 </dom-module>

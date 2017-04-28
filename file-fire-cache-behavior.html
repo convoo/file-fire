@@ -1,0 +1,31 @@
+/** * Using a Map to efficiently cache url that have already been fetched */
+<script>
+(function() {
+  var cache = new Map();
+
+  window.myBehaviors = window.myBehaviors || {};
+
+  /* @polymerBehavior myBehaviors.FileFireCache */
+  myBehaviors.FileFireCache = {
+    /* 
+     * `_pathReady` returns true if the path is a valid path 
+     */
+    __pathReady: function(path) {
+      return path && path.split('/').slice(1).indexOf('') < 0;
+    },
+
+    setCache: function(path, url) {
+      cache.set(path, url);
+    },
+
+    getCache: function(path) {
+      return cache.get(path);
+    },
+
+    cleaCache: function() {
+      cache.clear();
+    }
+  };
+
+})();
+</script>
