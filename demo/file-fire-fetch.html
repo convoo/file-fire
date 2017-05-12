@@ -1,58 +1,54 @@
 <!doctype html>
 <html>
-  <head>
-    <title>file-fire demo</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
-    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../../polymerfire/firebase-app.html">
-    <link rel="import" href="../../paper-input/paper-input.html">
-    <link rel="import" href="../file-fire-fetch.html">
-    <style is="custom-style" include="demo-pages-shared-styles">
-    </style>
-  </head>
-  
+
+<head>
+  <title>file-fire demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../polymerfire/firebase-app.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../file-fire-fetch.html">
+  <style is="custom-style" include="demo-pages-shared-styles">
+
+  </style>
+</head>
+
 <body>
-    <div>
-      <h3>Download a file from firebase storage path</h3>
-      <demo-snippet>
-        <template is="dom-bind">
-        <firebase-app
-            name="demo"
-            api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
-            auth-domain="convoofire.firebaseapp.com"
-            database-url="https://convoofire.firebaseio.com"
-            storage-bucket="convoofire.appspot.com"
-            >
-        </firebase-app>
+  <div>
+    <h3>Download a file from firebase storage path</h3>
+    <demo-snippet>
+      <template>
+        <dom-bind>
+          <template is="dom-bind">
+            <firebase-app name="demo" api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ" auth-domain="convoofire.firebaseapp.com" database-url="https://convoofire.firebaseio.com"
+              storage-bucket="convoofire.appspot.com">
+            </firebase-app>
 
-        <file-fire-fetch
-          app-name="demo"
-          path="{{path}}"
-          file-exists="{{fileExists}}"
-          file-url="{{myFileURL}}">
-        </file-fire-fetch>
+            <file-fire-fetch app-name="demo" path="{{path}}" file-exists="{{fileExists}}" file-url="{{myFileURL}}">
+            </file-fire-fetch>
 
-        <paper-input id="path" value="{{path}}"></paper-input>
+            <paper-input id="path" value="{{path}}"></paper-input>
 
-        <template is="dom-if" if="[[fileExists]]">
-          URL: [[myFileURL]]<br>
-          <img src="[[myFileURL]]"><br>
-        </template>
-
-        <script>
-            document.querySelector("#path").setAttribute("value", "/remote/file@2x")
-        </script>
-        
-
-        
-        </template>
-        </dom-module>
-    </div>
+            <template is="dom-if" if="[[fileExists]]">
+              URL: [[myFileURL]]<br>
+              <img src="[[myFileURL]]"><br>
             </template>
-      </demo-snippet>
 
-  </body>
+            <script>
+              document.querySelector("#path").setAttribute("value", "/remote/file@2x")
+            </script>
+
+
+
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+  </div>
+
+</body>
+
 </html>
