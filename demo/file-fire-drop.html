@@ -1,199 +1,213 @@
 <!doctype html>
 <html>
-  <head>
-    <title>file-fire demo</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
-    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../file-fire-drop.html">
-    <link rel="import" href="../../polymerfire/firebase-app.html">
-    <link rel="import" href="../../paper-button/paper-button.html">
-    <link rel="import" href="../../paper-fab/paper-fab.html">
+
+<head>
+  <title>file-fire demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../file-fire-drop.html">
+  <link rel="import" href="../../polymerfire/firebase-app.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-fab/paper-fab.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
+  <custom-style>
     <style is="custom-style" include="demo-pages-shared-styles">
+
     </style>
-  </head>
-  <body>
-<div>
+  </custom-style>
+</head>
 
+<body>
+  <div>
+    <h3>Drag & Drop, No Click</h3>
+    <demo-snippet>
+      <template>
+        <dom-bind>
+          <template is="dom-bind">
+            <firebase-app name="demo" api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ" auth-domain="convoofire.firebaseapp.com" database-url="https://convoofire.firebaseio.com"
+              storage-bucket="convoofire.appspot.com">
+            </firebase-app>
 
-
-
-      <h3>Drag & Drop, No Click</h3>
-      <demo-snippet>
-        <template is="dom-bind">
-        <firebase-app
-            name = "demo"
-            api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
-            auth-domain="convoofire.firebaseapp.com"
-            database-url="https://convoofire.firebaseio.com"
-            storage-bucket="convoofire.appspot.com"
+            <file-fire-drop
+              app-name="demo"
+              path="/dropdemo/noclick"
+              over-write
+              progress="{{progress}}"
+              placeholder="{{placeholder}}"
+              files="{{images}}" class="no-click"
             >
-        </firebase-app>
+              <div>This text can still be seen and selected </div>
+            </file-fire-drop>
 
-        <file-fire-drop
-          app-name="demo"
-          path="/dropdemo/noclick"
-          over-write
-          progress="{{progress}}"
-          placeholder="{{placeholder}}"
-          files="{{images}}"
-          class="no-click"
-        >
-            <div class="content">This text can still be seen and selected </div>
-        </file-fire-drop>
+            <custom-style>
+              <style is="custom-style">
+                file-fire-drop.no-click {
+                  --file-fire-dropzone-background: #54a6e3;
+                  height: 100px;
+                  width: 100px;
+                  border: 1px solid #54a6e3;
+                  border-radius: 4px;
+                }
 
-        <style is="custom-style">
-          file-fire-drop.no-click {
-            --file-fire-dropzone-background: #54a6e3;
-            height: 100px;
-            width: 100px;
-            border: 1px solid #54a6e3;
-            border-radius: 4px;
-          }
-          .content{
-            padding: 8px;
-          }
-        </style>
+                .content {
+                  padding: 8px;
+                }
+              </style>
+            </custom-style>
+          </template>
+        </dom-bind>
       </template>
     </demo-snippet>
 
-   
-<h3>Drag & Drop or Click </h3>
+
+    <h3>Drag & Drop or Click </h3>
     <demo-snippet>
-      <template is="dom-bind">
-        <file-fire-drop
-          app-name="demo"
-          path="/dropdemo/click"
-          src-file
-          over-write
-          max-dimension="200"
-          resize-height="16"
-          resize-width="16"
-          max-scale="3"
-          progress="{{progress}}"
-          placeholder="{{base64}}"
-          images="{{images}}"
-          always-show
-          class="click"
-        >
-        </file-fire-drop>
+      <template>
+        <dom-bind>
+          <template is="dom-bind">
+            <file-fire-drop
+              app-name="demo"
+              path="/dropdemo/click"
+              src-file over-write
+              max-dimension="200"
+              resize-height="16"
+              resize-width="16"
+              max-scale="3" 
+              progress="{{progress}}"
+              placeholder="{{base64}}"
+              images="{{images}}"
+              always-show class="click">
+            </file-fire-drop>
 
-        <style is="custom-style">
-          file-fire-drop.click { 
-            --file-fire-dropzone-background-image: url("http://i.imgur.com/ndcWzqn.png");
-            height: 100px;
-            width: 100px;
-            border-radius: 4px;
-          }
-          
-        </style>
+            <custom-style>
+              <style is="custom-style">
+                file-fire-drop.click {
+                  --file-fire-dropzone-background-image: url("http://i.imgur.com/ndcWzqn.png");
+                  height: 100px;
+                  width: 100px;
+                  border-radius: 4px;
+                }
+              </style>
+            </custom-style>
 
+          </template>
+        </dom-bind>
       </template>
     </demo-snippet>
 
 
     <h3>Drag & Drop or Click with Instant Preveiw</h3>
     <demo-snippet>
-      <template is="dom-bind">
-        <file-fire-drop
-          app-name="demo"
-          path="/dropdemo/click"
-          src-file
-          over-write
-          max-dimension="200"
-          resize-height="16"
-          resize-width="16"
-          max-scale="3"
-          progress="{{progress}}"
-          placeholder="{{base64}}"
-          images="{{images}}"
-          always-show
-          instant
-          class="instant"
-        >
-        </file-fire-drop>
+      <template>
+        <dom-bind>
+          <template is="dom-bind">
+            <file-fire-drop
+              app-name="demo"
+              path="/dropdemo/click"
+              src-file over-write
+              max-dimension="200"
+              resize-height="16"
+              resize-width="16"
+              max-scale="3"
+              progress="{{progress}}"
+              placeholder="{{base64}}"
+              images="{{images}}"
+              always-show instant
+              class="instant"
+            >
+            </file-fire-drop>
 
-        <style is="custom-style">
-          file-fire-drop.instant { 
-            height: 100px;
-            width: 100px;
-            border-radius: 4px;
-            --file-fire-dropzone-background-image: url("http://i.imgur.com/ndcWzqn.png");   
-          }
-          
-        </style>
+            <custom-style>
+              <style is="custom-style">
+                file-fire-drop.instant {
+                  height: 100px;
+                  width: 100px;
+                  border-radius: 4px;
+                  --file-fire-dropzone-background-image: url("http://i.imgur.com/ndcWzqn.png");
+                }
+              </style>
+            </custom-style>
 
+          </template>
+        </dom-bind>
       </template>
     </demo-snippet>
 
 
     <h3>Drag & Drop or Click Button</h3>
     <demo-snippet>
-      <template is="dom-bind">
-        <file-fire-drop
-          app-name="demo"
-          path="/dropdemo/button"
-          src-file
-          over-write
-          max-dimension="200"
-          resize-height="16"
-          resize-width="16"
-          max-scale="3"
-          progress="{{progress}}"
-          placeholder="{{base64}}"
-          images="{{images}}"
-          always-show
-          class="button"
-        >
-            <paper-button raised noink>Upload File</paper-button>
-        </file-fire-drop>
+      <template>
+        <dom-bind>
+          <template is="dom-bind">
+            <file-fire-drop
+              app-name="demo"
+              path="/dropdemo/button"
+              src-file
+              over-write
+              max-dimension="200"
+              resize-height="16"
+              resize-width="16"
+              max-scale="3"
+              progress="{{progress}}"
+              placeholder="{{base64}}"
+              images="{{images}}"
+              always-show
+              class="button"
+            >
+              <paper-button raised noink>Upload File</paper-button>
+            </file-fire-drop>
 
-        <style is="custom-style">
-          file-fire-drop.button { 
-              width: 110px;
-          }
-          
-        </style>
+            <custom-style>
+              <style is="custom-style">
+                file-fire-drop.button {
+                  width: 110px;
+                }
+              </style>
+            </custom-style>
 
+          </template>
+        </dom-bind>
       </template>
     </demo-snippet>
 
 
-      <h3>Drag & Drop or Click Fab</h3>
+    <h3>Drag & Drop or Click Fab</h3>
     <demo-snippet>
-      <template is="dom-bind">
-        <file-fire-drop
-          app-name="demo"
-          path="/dropdemo/fab"
-          src-file
-          over-write
-          max-dimension="200"
-          resize-height="16"
-          resize-width="16"
-          max-scale="3"
-          progress="{{progress}}"
-          placeholder="{{base64}}"
-          images="{{images}}"
-          always-show
-          class="fab"
-        >
-            <paper-fab noink icon="add" title="add"></paper-fab>
-        </file-fire-drop>
+      <template>
+        <dom-bind>
+          <template is="dom-bind">
+            <file-fire-drop
+              app-name="demo"
+              path="/dropdemo/fab"
+              src-file over-write
+              max-dimension="200"
+              resize-height="16"
+              resize-width="16"
+              max-scale="3"
+              progress="{{progress}}"
+              placeholder="{{base64}}"
+              images="{{images}}"
+              always-show
+              class="fab"
+            >
+              <paper-fab noink icon="add" title="add"></paper-fab>
+            </file-fire-drop>
 
-        <style is="custom-style">
-          file-fire-drop.fab { 
-            width: 60px;
-          }
-          
-        </style>
+            <custom-style>
+              <style is="custom-style">
+                file-fire-drop.fab {
+                  width: 60px;
+                }
+              </style>
+            </custom-style>
 
+          </template>
+        </dom-bind>
       </template>
     </demo-snippet>
-
-
-
-    </div>
-  </body>
+  </div>
+</body>
 </html>

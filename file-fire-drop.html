@@ -44,18 +44,16 @@
 
 <div id ="dropZone">
 
-    <p>{{hoverText}}</p>
+  <p>{{hoverText}}</p>
 
-  
   <template is="dom-if" if={{onlyImages}}>
-    <input type="file" id="inputfile" accept="image/*" on-change="_instantLoad" on-drag-enter="_enter" on-drop="_drop">
+    <input type="file" id="inputfile" accept="image/*" on-change="_instantLoad" on-dragover="_dragover" on-dragleave="_exit" on-drop="_drop">
   </template>
-
   <template is="dom-if" if={{!onlyImages}}>
-    <input type="file" id="inputfile" on-change="_instantLoad" on-drag-enter="_enter" on-drop="_drop">
+    <input type="file" id="inputfile" on-change="_instantLoad" on-dragover="_dragover" on-dragleave="_exit" on-drop="_drop">
   </template>
 </div>
-<content></content>
+<slot></slot>
 
         
     </template>
@@ -113,9 +111,7 @@
       },
     
     listeners: {
-        'dragenter' : '_enter',
-        'dropZone.dragenter' : '_enter',
-        'dropZone.dragleave' : '_exit'
+        'dragenter' : '_enter'
     },
 
     _instantLoad: function(event){
@@ -124,8 +120,7 @@
         var reader = new FileReader();
         reader.onload = function (data) {
             var imageUrl = "url("+data.target.result+")"
-            this.customStyle["--file-fire-dropzone-background-image"] = imageUrl;
-            this.updateStyles();
+            this.updateStyles({"--file-fire-dropzone-background-image": imageUrl});
         }.bind(this);
         reader.readAsDataURL(event.target.files[0]);
       }
@@ -133,8 +128,7 @@
 
     _checkShow: function(newShow, oldShow){
       if(newShow){
-        this.customStyle["--file-fire-display"] = "block";
-        this.updateStyles();
+        this.updateStyles({"--file-fire-display": "block"});
       }
     },
 
@@ -152,25 +146,26 @@
 
     _enter: function(e){
       if(this._hasAFile(e) && !this.alwaysShow){
-        e.stopPropagation();
-        e.preventDefault();
-        this.customStyle["--file-fire-display"] = "block";
-        this.updateStyles();
+        this.updateStyles({"--file-fire-display": "block"});
       }
     },
 
-    _exit: function(){
+    _exit: function(e){
       if(!this.alwaysShow){
-        this.customStyle["--file-fire-display"] = "none";
-        this.updateStyles();
+        this.updateStyles({"--file-fire-display": "none"});
       }
     },
 
     _drop: function(e){
+        e.target.files = e.dataTransfer.files;
+        e.preventDefault();
         if(!this.alwaysShow){
-        this.customStyle["--file-fire-display"] = "none";
-        this.updateStyles();
+        this.updateStyles({"--file-fire-display": "none"});
       }
+    },
+
+    _dragover: function(e) {
+      e.preventDefault();
     }
 
   });

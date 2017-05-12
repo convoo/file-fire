@@ -17,78 +17,87 @@
   <div>
     <h3>Select a file to upload with no resize</h3>
       <demo-snippet>
-        <template is="dom-bind">
-        <firebase-app
-            name="demo"
-            api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
-            auth-domain="convoofire.firebaseapp.com"
-            database-url="https://convoofire.firebaseio.com"
-            storage-bucket="convoofire.appspot.com"
+        <template>
+          <dom-bind>
+          <template is="dom-bind">
+            <firebase-app
+                name="demo"
+                api-key="AIzaSyACU-9dEBSmlEq8iwfuDCPCWU81UNDytuQ"
+                auth-domain="convoofire.firebaseapp.com"
+                database-url="https://convoofire.firebaseio.com"
+                storage-bucket="convoofire.appspot.com"
+                >
+            </firebase-app>
+            <file-fire
+              id="local"
+              app-name="demo"
+              path="/local/file"
+              progress="{{progress}}"
+              download-url="{{downloadUrl}}"
+              placeholder="{{placeholder}}"
+              debug
             >
-        </firebase-app>
-        <file-fire
-          id="local"
-          app-name="demo"
-          path="/local/file"
-          progress="{{progress}}"
-          download-url="{{downloadUrl}}"
-          placeholder="{{placeholder}}"
-          debug
-        >
-        </file-fire>
-        <br><br> 
-        Progress: [[progress]]% <br>
-        </br></br>URl's: </br>
-        <template is="dom-repeat" items="{{downloadUrl}}">
-          [[item.url]]
+            </file-fire>
+            <br><br> 
+            Progress: [[progress]]% <br>
+            </br></br>URl's: </br>
+            <template is="dom-repeat" items="{{downloadUrl}}">
+              [[item.url]]
+            </template>
+            <br> <br> 
+            
+
+            <script>
+                document.querySelector("#local").addEventListener("upload", function(e){
+                  console.log(e);
+                })
+            </script>
+
+            </template>
+        </dom-bind>
         </template>
-        <br> <br> 
         
-
-        <script>
-            document.querySelector("#local").addEventListener("upload", function(e){
-              console.log(e);
-            })
-        </script>
-
-        </template>
       </demo-snippet>
 
 
         <h3>Get remote file, upload and resize</h3>
         <demo-snippet>
-        <template is="dom-bind">
-        <file-fire
-          id="remote"
-          app-name="demo"
-          path="/remote/file"
-          src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
-          progress="{{remoteProgress}}"
-          download-url="{{downloadRemoteUrl}}"
-          max-scale="3"
-          resize-height="50"
-          resize-width="50"
-          placeholder="{{remotePlaceholder}}"
-          debug
-        ></file-fire>
+          <template>
+            <dom-bind>
+            <template is="dom-bind">
+              <file-fire
+              id="remote"
+                app-name="demo"
+                path="/remote/file"
+                src-url="https://pbs.twimg.com/profile_images/741290730170122240/abfazODg_400x400.jpg"
+                progress="{{remoteProgress}}"
+                download-url="{{downloadRemoteUrl}}"
+                max-scale="3"
+                resize-height="50"
+                resize-width="50"
+                placeholder="{{remotePlaceholder}}"
+                debug
+              ></file-fire>
 
-        Progress: [[remoteProgress]]% <br>
-        <template is="dom-repeat" items="{{downloadRemoteUrl}}">
-          [[item.name]]:<img src="{{item.url}}"><br>
-        </template>
-        Placeholder: <img src="{{remotePlaceholder}}"><br>
-        Placholder string: [[remotePlaceholder]]
+              Progress: [[remoteProgress]]% <br>
+              <template is="dom-repeat" items="{{downloadRemoteUrl}}">
+                [[item.name]]:<img src$="{{item.url}}"><br>
+              </template>
+              Placeholder: <img src$="{{remotePlaceholder}}"><br>
+              Placholder string: [[remotePlaceholder]]
 
-        <script>
-            document.querySelector("#remote").addEventListener("upload", function(e){
-              console.log(e);
-            })
-            document.querySelector("#remote").addEventListener("no-remote", function(e){
-              console.log(e);
-            })
-        </script>
+              <script>
+                document.querySelector("#remote").addEventListener("upload", function(e){
+                  console.log(e);
+                })
+                document.querySelector("#remote").addEventListener("no-remote", function(e){
+                  console.log(e);
+                })
+              </script>
         
-        </template>
+            </template>
+          </dom-bind>
+          </template>
       </demo-snippet>
     </div>
 
